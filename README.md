@@ -4,7 +4,8 @@ PÁGINA: QUIZ <br>
 PÁGINA: ARTIGO <br>
 PÁGINA: MODO DE JOGO <br>
 CSS PRINCIPAL <br>
-MODOS: <br>- DIÁRIO; <br>
+MODOS: <br>
+- DIÁRIO; <br>
 - FAÇA SEU MELHOR; <br>
 - CONTRA O TEMPO. <br>
  <br>
@@ -16,7 +17,7 @@ PERFIL <br>
 IMAGENS <br>
 MODOS: <br>
 - FAÇA SEU QUIZ; <br>
-- ESCOLHA A MATÉRIA. <br>
+- ESCOLHENDO TÓPICOS; <br>
 CONFIGURAÇÕES <br>
 ESTATÍSTICAS <br>
 INTELIGÊNCIA ARTIFICIAL (OPCIONAL) <br>
