@@ -4,8 +4,7 @@ PÁGINA: QUIZ <br>
 PÁGINA: ARTIGO <br>
 PÁGINA: MODO DE JOGO <br>
 CSS PRINCIPAL <br>
-MODOS: <br>
-- DIÁRIO; <br>
+MODOS: <br>- DIÁRIO; <br>
 - FAÇA SEU MELHOR; <br>
 - CONTRA O TEMPO. <br>
  <br>
