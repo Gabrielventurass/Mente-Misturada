@@ -8,7 +8,7 @@ MODOS (botões): <br>
 - DIÁRIO; <br>
 - FAÇA SEU MELHOR; <br>
 - CONTRA O TEMPO. <br>
-X
+
  <br>
 # (PLANOS FUTUROS)
 PERFIL <br>
