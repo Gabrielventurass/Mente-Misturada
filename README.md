@@ -9,7 +9,6 @@ MODOS (botões): <br>
 - FAÇA SEU MELHOR; <br>
 - CONTRA O TEMPO. <br>
 
- <br>
 # (PLANOS FUTUROS)
 PERFIL <br>
 PÁGINA: QUIZ <br>
