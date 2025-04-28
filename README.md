@@ -1,14 +1,14 @@
 
 # MENTE MISTURADA V1.0.0
 CSS PRINCIPAL <br>
+PÁGINA: QUIZ <br>
+PÁGINA: ARTIGO <br>
+PÁGINA: MODO DE JOGO <br>
 MODOS (botões): <br>
 - DIÁRIO; <br>
 - FAÇA SEU MELHOR; <br>
 - CONTRA O TEMPO. <br>
-PÁGINA LOGIN <br>
-PÁGINA CADASTRO <br>
-IMAGENS <br>
-BANCO <br>
+X
  <br>
 # (PLANOS FUTUROS)
 PERFIL <br>
