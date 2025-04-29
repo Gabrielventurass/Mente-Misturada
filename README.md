@@ -4,6 +4,7 @@ PRINCIPAL <br>
 LOGIN <br>
 CADASTRO <br>
 BANCO <br>
+SISTEMAS DE ADMINISTRADOR <br>
 MODOS (botões): <br>
 - DIÁRIO; <br>
 - FAÇA SEU MELHOR; <br>
