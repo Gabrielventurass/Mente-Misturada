@@ -1,0 +1,181 @@
+.btDf{
+    padding: 10px;
+    background-color: rgb(100, 196, 228);
+    border: 2px solid black groove;
+    border-radius: 20px;
+    font-size: large;
+    font-style: bold;
+}
+.btEx{
+    padding: 10px;
+    background-color: rgb(218, 9, 9);
+    border: 2px solid black groove;
+    border-radius: 20px;
+    font-size: large;
+    font-style: bold;
+}
+.btReset{
+    padding: 10px;
+    background-color: rgb(195, 158, 24);
+    border: 2px solid black groove;
+    border-radius: 20px;
+    font-size: large;
+    font-style: bold;
+}
+.btDfMini{
+    padding: 5px;
+    background-color: rgb(100, 196, 228);
+    border: 1px solid black groove;
+    border-radius: 20px;
+    font-size: small;
+    font-style: bold;
+}
+.btExMini{
+    padding: 5px;
+    background-color: rgb(218, 9, 9);
+    border: 1px solid black groove;
+    border-radius: 20px;
+    font-size: small;
+    font-style: bold;
+}
+.btResetMini{
+    padding: 5px;
+    background-color: rgb(195, 158, 24);
+    border: 1px solid black groove;
+    border-radius: 20px;
+    font-size: small;
+    font-style: bold;
+}
+.btLar{
+    padding: 20px 10px 10px 10px;
+    background: linear-gradient(to bottom, orange, rgb(117, 47, 6));
+    border: 0px;
+    border-radius: 20px;
+    font-size: large;
+    font-style: bold;
+    margin: 5px;
+}
+.btGrn{
+    padding: 10px;
+    background: linear-gradient(to bottom, rgb(85, 197, 11), rgb(33, 83, 9));
+    border: 0px;
+    border-radius: 20px;
+    font-size: large;
+    font-style: bold;
+    margin: 5px;
+}
+.btBlu{
+    padding: 10px;
+    background: linear-gradient(to bottom, rgb(0, 162, 255), rgb(6, 76, 117));
+    border: 0px;
+    border-radius: 20px;
+    font-size: large;
+    font-style: bold;
+    margin: 5px;
+}
+.btYlw{
+    padding: 10px;
+    background: linear-gradient(to bottom, rgb(217, 255, 0), rgb(110, 117, 6));
+    border: 0px;
+    border-radius: 20px;
+    font-size: large;
+    font-style: bold;
+    margin: 5px;
+}
+.btGry{
+    padding: 10px;
+    background: linear-gradient(to bottom, rgb(150, 150, 150), rgb(78, 78, 78));
+    border: 0px;
+    border-radius: 20px;
+    font-size: large;
+    font-style: bold;
+    margin: 5px;
+}
+.btImg{
+    width: 50px;
+    height: auto;
+}
+.sub{
+    color: rgb(78, 75, 75);
+}
+.popUp{
+    margin: 150px 500px 0px 500px;
+    border: 5px solid black;
+    border-radius: 20px;
+    border-style: groove;
+    padding: 20px;
+    background: linear-gradient(to bottom, rgb(0, 255, 106), rgb(31, 126, 71));
+}
+.inputs{
+    border-radius: 15px;
+    padding: 3px;
+    margin-left: 20%;
+    margin-right: auto;
+    margin-bottom: 20px;
+}
+.labels{
+    margin-left: 20%;
+    margin-right: auto;
+}
+.field{
+    border: 0px;
+    background: linear-gradient(to bottom, rgb(0, 255, 106), rgb(31, 126, 71));
+    padding: 20px;
+    margin: -1%;
+}
+.menu{
+    margin-right: 10px;
+}
+.text{
+    font-size: x-large;
+
+}
+.input{
+    border-radius: 15px;
+    border: 2px solid black;
+    border-style: groove;
+    padding: 3px;
+}
+.flex-container {
+    display: flex;
+    align-items: center; /* Alinha verticalmente */
+    justify-content: space-between; /* Espaça entre os elementos */
+    padding: 10px 100px 10px 10px;
+}
+
+.menu-icons a {
+    margin-right: 10px;
+}
+
+.usuario-nome {
+    margin: 0;
+    font-size: 1.5em;
+    color: #333;
+}
+#tit{
+    font-family: Impact, Haettenschweiler, 'Arial Narrow Bold', sans-serif;
+    font-size: 40px;
+    color: rgb(29, 4, 53);
+}
+body {
+    background-color: rgb(221, 221, 182);
+}
+h1 {
+    font-size: xx-large;
+}
+th {
+    background: linear-gradient(to bottom, rgb(0, 255, 106), rgb(31, 126, 71));
+}
+table {
+    border-collapse: collapse; 
+    width: 80%; 
+    margin: 20px auto;
+}
+th, td { 
+    border: 1px solid #aaa; 
+    padding: 8px; 
+    text-align: center; 
+}
+form { 
+    display: inline; 
+}
