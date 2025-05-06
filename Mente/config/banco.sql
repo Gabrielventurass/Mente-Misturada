@@ -6,7 +6,7 @@ CREATE TABLE usuario (
   nome VARCHAR(45),
   senha VARCHAR(255)
 ) ENGINE=InnoDB;
-
+            
 CREATE TABLE admins_pendentes (
     id INT AUTO_INCREMENT PRIMARY KEY,
     nome VARCHAR(100),
