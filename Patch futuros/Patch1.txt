@@ -1,0 +1,11 @@
++CSSs:
+    -formato botões
+    -borda botões
+    -centralizar paginas login e cadastro
+    -fundos
+
++configurações melhor:
+    -criar a pagina de configurações
+
++Recuperar senha:
+    -criar a pagina de recuperação

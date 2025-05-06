@@ -7,15 +7,17 @@ class admin {
     private $email;
     private $senha;
 
-    public function __construct($codigo,$nome, $email, $senha) {
+    public function __construct($codigo, $nome, $email, $senha) {
         $this->codigo = $codigo;
         $this->nome = $nome;
         $this->email = $email;
         $this->senha = $senha;
     }
 
+    // Admin fixo que sempre existe
     public static function adminPadrao() {
-        return new Admin("admin@mente.com", "Administrador Principal", "senhaSegura123");
+        // A senha pode ser criptografada com password_hash() ou ser verificada em tempo de login
+        return new admin("0", "Administrador Principal", "admin1@gmail.com", "d3lta034");
     }
 
     // Getters
@@ -56,76 +58,72 @@ class admin {
         $this->senha = $senha;
     }
 
-    //
     private $erro = '';
     public function getErro(): string {
         return $this->erro;
     }
 
-    // Método para inserir usuário
     public function inserir(): bool {
         try {
             $conexao = new PDO(DSN, ADMIN, SENHA);
-    
-            // Verificar se o e-mail já existe na tabela admin
+
             $verificaAdmin = $conexao->prepare("SELECT email FROM admin WHERE email = :email");
             $verificaAdmin->bindValue(':email', $this->getEmail());
             $verificaAdmin->execute();
-    
+
             if ($verificaAdmin->rowCount() > 0) {
                 $this->erro = "Este e-mail já está cadastrado como administrador!";
                 return false;
             }
-    
-            // Verificar se já está pendente
+
             $verificaPendente = $conexao->prepare("SELECT email FROM admins_pendentes WHERE email = :email");
             $verificaPendente->bindValue(':email', $this->getEmail());
             $verificaPendente->execute();
-    
+
             if ($verificaPendente->rowCount() > 0) {
                 $this->erro = "Este e-mail já está aguardando aprovação!";
                 return false;
             }
-    
-            // Inserir na tabela de pendentes
+
             $sql = "INSERT INTO admins_pendentes (nome, email, senha) VALUES (:nome, :email, :senha)";
             $comando = $conexao->prepare($sql);
-    
-            // Aqui você adiciona o hash da senha:
+
             $senhaHash = password_hash($this->senha, PASSWORD_DEFAULT);
             $comando->bindValue(':nome', $this->getNome());
             $comando->bindValue(':email', $this->getEmail());
             $comando->bindValue(':senha', $senhaHash);
-    
+
             return $comando->execute();
-    
+
         } catch (PDOException $e) {
             $this->erro = "Erro de banco de dados: " . $e->getMessage();
             return false;
         }
     }
-    
-    
-    
-    // Buscar usuário pelo e-mail
+
     public static function buscarPorEmail($email) {
+        // Verifica se é o admin fixo
+        $adminFixo = self::adminPadrao();
+        if ($email === $adminFixo->getEmail()) {
+            return $adminFixo;
+        }
+
         $conexao = new PDO(DSN, ADMIN, SENHA);
-    
+
         $sql = "SELECT codigo, nome, email, senha FROM admin WHERE email = :email LIMIT 1";
         $comando = $conexao->prepare($sql);
         $comando->bindValue(':email', $email);
         $comando->execute();
-    
+
         $resultado = $comando->fetch(PDO::FETCH_ASSOC);
-    
+
         if ($resultado) {
-            $admin = new admin(
+            return new admin(
                 $resultado['codigo'],
                 $resultado['nome'],
                 $resultado['email'],
                 $resultado['senha']
             );
-            return $admin;
         }
         return null;
     }
@@ -133,53 +131,54 @@ class admin {
     public function atualizarNome(): bool {
         try {
             $conexao = new PDO(DSN, ADMIN, SENHA);
-    
+
             $sql = "UPDATE admin SET nome = :nome WHERE email = :email";
             $comando = $conexao->prepare($sql);
-    
+
             $comando->bindValue(':nome', $this->getNome());
             $comando->bindValue(':email', $this->getEmail());
-    
+
             return $comando->execute();
         } catch (PDOException $e) {
             $this->erro = "Erro ao atualizar nome: " . $e->getMessage();
             return false;
         }
     }
-    
 
+    public static function listarTodos() {
+        $conexao = new PDO(DSN, ADMIN, SENHA);
 
-public static function listarTodos() {
-    $conexao = new PDO(DSN, ADMIN, SENHA);
+        $sql = "SELECT codigo, nome, email FROM admin ORDER BY nome";
+        $comando = $conexao->prepare($sql);
+        $comando->execute();
 
-    $sql = "SELECT codigo, nome, email FROM admin ORDER BY nome";
-    $comando = $conexao->prepare($sql);
-    $comando->execute();
+        return $comando->fetchAll(PDO::FETCH_ASSOC);
+    }
 
-    return $comando->fetchAll(PDO::FETCH_ASSOC);
-}
+    public static function atualizarNomePorEmail($email, $novoNome) {
+        $conexao = new PDO(DSN, ADMIN, SENHA);
 
-// Atualizar o nome de um usuário
-public static function atualizarNomePorEmail($email, $novoNome) {
-    $conexao = new PDO(DSN, ADMIN, SENHA);
+        $sql = "UPDATE admin SET nome = :nome WHERE email = :email";
+        $comando = $conexao->prepare($sql);
+        $comando->bindValue(':nome', $novoNome);
+        $comando->bindValue(':email', $email);
 
-    $sql = "UPDATE admin SET nome = :nome WHERE email = :email";
-    $comando = $conexao->prepare($sql);
-    $comando->bindValue(':nome', $novoNome);
-    $comando->bindValue(':email', $email);
+        return $comando->execute();
+    }
 
-    return $comando->execute();
-}
+    public static function excluirPorEmail($email) {
+        // Impede a exclusão do admin fixo
+        if ($email === self::adminPadrao()->getEmail()) {
+            return false;
+        }
 
-// Excluir um usuário
-public static function excluirPorEmail($email) {
-    $conexao = new PDO(DSN, ADMIN, SENHA);
+        $conexao = new PDO(DSN, ADMIN, SENHA);
 
-    $sql = "DELETE FROM admin WHERE email = :email";
-    $comando = $conexao->prepare($sql);
-    $comando->bindValue(':email', $email);
+        $sql = "DELETE FROM admin WHERE email = :email";
+        $comando = $conexao->prepare($sql);
+        $comando->bindValue(':email', $email);
 
-    return $comando->execute();
-}
+        return $comando->execute();
+    }
 }
 ?>
