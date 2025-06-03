@@ -89,17 +89,15 @@ $admins = admin::listarTodos();
             display: inline;
         }
         input{
-            background-color: rgb(185, 185, 185);;
+            background-color: rgb(221, 221, 182);
             border: 1px solid black;
             border-radius: 10px;
             padding-right: 150px;
-            margin-right: -150px;
         }
         .input{
-            background-color: rgb(185, 185, 185);;
+        background-color: rgb(221, 221, 182);
             border: 1px solid black;
             width: 300px;
-            margin-left: -10%;
         }
     </style>
 
@@ -162,9 +160,7 @@ $admins = admin::listarTodos();
                 <td>
                     <form method="post">
                         <input type="hidden" name="acao" value="atualizar">
-                        <input type="hidden" name="email" value="<?= htmlspecialchars($usuario['email']) ?>">
-                        <input type="hidden" name="tipo" value="usuario">
-                        <input type="text" name="novo_nome" value="<?= htmlspecialchars($usuario['nome']) ?>">
+                        <?= htmlspecialchars($usuario['nome']) ?>
                 </td>
                 <td><?= htmlspecialchars($usuario['email']) ?></td>
                 <td>

@@ -1,8 +1,11 @@
 <?php
-require_once("../class/adm.class.php");
+require_once "../class/adm.class.php";
 session_start();
 
-$erroLogin = '';
+admin::garantirAdminPadraoNoBanco();
+
+$erro = '';
+$admin = null; // evita warning
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'] ?? '';
@@ -10,18 +13,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     $admin = admin::buscarPorEmail($email);
 
-    if ($admin && password_verify($senha, $admin->getSenha())) {
-        // Login bem-sucedido
-        $_SESSION['nome_admin'] = $admin->getNome();
-        $_SESSION['email_admin'] = $admin->getEmail();
+    if ($admin && $admin->verificarSenha($senha)) {
+$_SESSION['nome_admin'] = $admin->getNome();
+$_SESSION['email_admin'] = $admin->getEmail();
+header("Location: inicio_adm.php");
 
-        header("Location: inicio_adm.php"); // Página protegida
-        exit();
+        exit;
     } else {
-        $erroLogin = "E-mail ou senha inválidos.";
+        $erro = "Email ou senha inválidos!";
     }
 }
 ?>
+
+
 
 <!DOCTYPE html>
 <html lang="pt-br">

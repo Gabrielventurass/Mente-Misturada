@@ -2,6 +2,7 @@
 require_once "../class/quiz.class.php";
 session_start();
 
+echo "<center>";
 if (!isset($_SESSION['email_usuario'])) {
     echo "Você precisa estar logado para enviar respostas.";
     exit;
@@ -61,14 +62,18 @@ try {
     echo "<p>Tempo gasto: <strong>" . intval($tempo) . "</strong> segundos</p>";
 
     echo '<form method="post" action="quiz.php">';
-    echo '    <button type="submit">Próxima rodada</button>';
+    echo '    <button type="submit" class="btDf">Próxima rodada</button>';
     echo '</form>';
 
     echo '<form method="get" action="../users/inicio.php">';
-    echo '    <button type="submit">Voltar</button>';
+    echo '    <button type="submit" class="btEx">Voltar</button>';
     echo '</form>';
 
 } catch (PDOException $e) {
     echo "Erro: " . $e->getMessage();
 }
+
+echo "</center>";
+
 ?>
+<link rel="stylesheet" href="../css/style.css">

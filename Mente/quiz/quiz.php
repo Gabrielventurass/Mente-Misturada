@@ -53,11 +53,10 @@ if (!$quizAleatorio) {
         <?php endforeach; ?>
 
         <button type="submit" onclick="registrarTempo()" class="btDf">Enviar Respostas</button>
+        <button type="button" onclick="window.location.href='../users/inicio.php'" class="btDf">Voltar</button>
     </form>
 
-    <!-- Botões fora do formulário -->
-    <button type="button" onclick="window.location.href='quiz.php'" class="btDf">Próxima rodada</button>
-    <button type="button" onclick="window.location.href='../users/inicio.php'" class="btDf">Voltar</button>
+
 
     <!-- Script de contagem de tempo -->
     <script>

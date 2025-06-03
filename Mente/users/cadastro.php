@@ -1,6 +1,21 @@
 <?php
-    include "user.php";
+require_once "../class/user.class.php";
+
+if ($_SERVER["REQUEST_METHOD"] === "POST" && isset($_POST['acao']) && $_POST['acao'] === 'salvar') {
+    $nome = $_POST['nome'] ?? '';
+    $email = $_POST['email'] ?? '';
+    $senha = $_POST['senha'] ?? '';
+
+    $usuario = new usuario($nome, $email, $senha);
+    if ($usuario->inserir()) {
+        header("Location: login.php");
+        exit;
+    } else {
+        $erroCadastro = $usuario->getErro();
+    }
+}
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>

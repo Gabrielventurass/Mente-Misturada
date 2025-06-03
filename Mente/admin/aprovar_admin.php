@@ -10,11 +10,11 @@ try {
 
     // Aprovação ou rejeição via POST
     if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-        $id = $_POST['id'];
+        $codigo = $_POST['codigo'];
         $acao = $_POST['acao'];
 
-        $stmt = $pdo->prepare("SELECT * FROM admins_pendentes WHERE id = ?");
-        $stmt->execute([$id]);
+        $stmt = $pdo->prepare("SELECT * FROM admins_pendentes WHERE codigo = ?");
+        $stmt->execute([$codigo]);
         $pendente = $stmt->fetch(PDO::FETCH_ASSOC);
 
         if ($pendente) {
@@ -23,8 +23,8 @@ try {
                 $inserir->execute([$pendente['nome'], $pendente['email'], $pendente['senha']]);
             }
 
-            $excluir = $pdo->prepare("DELETE FROM admins_pendentes WHERE id = ?");
-            $excluir->execute([$id]);
+            $excluir = $pdo->prepare("DELETE FROM admins_pendentes WHERE codigo = ?");
+            $excluir->execute([$codigo]);
         }
     }
 
@@ -63,18 +63,18 @@ try {
         </tr>
         <?php foreach ($lista as $admin): ?>
         <tr>
-            <td><?= htmlspecialchars($admin['id']) ?></td>
+            <td><?= htmlspecialchars($admin['codigo']) ?></td>
             <td><?= htmlspecialchars($admin['nome']) ?></td>
             <td><?= htmlspecialchars($admin['email']) ?></td>
             <td><?= htmlspecialchars($admin['dt_cr']) ?></td>
             <td>
                 <form method="post">
-                    <input type="hidden" name="id" value="<?= $admin['id'] ?>">
+                    <input type="hidden" name="codigo" value="<?= $admin['codigo'] ?>">
                     <input type="hidden" name="acao" value="aprovar">
                     <button type="submit">Aprovar</button>
                 </form>
                 <form method="post">
-                    <input type="hidden" name="id" value="<?= $admin['id'] ?>">
+                    <input type="hidden" name="codigo" value="<?= $admin['codigo'] ?>">
                     <input type="hidden" name="acao" value="rejeitar">
                     <button type="submit" onclick="return confirm('Deseja rejeitar?')">Rejeitar</button>
                 </form>
