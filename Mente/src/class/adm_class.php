@@ -1,5 +1,5 @@
 <?php
-require_once "../config/config.inc.php";
+require_once "database.php";
 
 class admin {
     private $codigo;
@@ -64,7 +64,7 @@ class admin {
     // Inserir admin (pendente aprovação)
     public function inserir(): bool {
         try {
-            $conexao = new PDO(DSN, ADMIN, SENHA);
+            $conexao = conectarPDO();
 
             $verificaAdmin = $conexao->prepare("SELECT email FROM admin WHERE email = :email");
             $verificaAdmin->bindValue(':email', $this->getEmail());
@@ -105,7 +105,7 @@ class admin {
         }
 
         try {
-            $conexao = new PDO(DSN, ADMIN, SENHA);
+            $conexao = conectarPDO();
             $sql = "SELECT codigo, nome, email, senha FROM admin WHERE email = :email LIMIT 1";
             $comando = $conexao->prepare($sql);
             $comando->bindValue(':email', $email);
@@ -130,7 +130,7 @@ class admin {
     // Atualizar nome do admin logado
     public function atualizarNome(): bool {
         try {
-            $conexao = new PDO(DSN, ADMIN, SENHA);
+            $conexao = conectarPDO();
             $sql = "UPDATE admin SET nome = :nome WHERE email = :email";
             $comando = $conexao->prepare($sql);
             $comando->bindValue(':nome', $this->getNome());
@@ -144,7 +144,7 @@ class admin {
 
     // Listar todos admins
     public static function listarTodos() {
-        $conexao = new PDO(DSN, ADMIN, SENHA);
+        $conexao = conectarPDO();
         $sql = "SELECT codigo, nome, email FROM admin ORDER BY nome";
         $comando = $conexao->prepare($sql);
         $comando->execute();
@@ -153,7 +153,7 @@ class admin {
 
     // Atualizar nome por email (estático)
     public static function atualizarNomePorEmail($email, $novoNome) {
-        $conexao = new PDO(DSN, ADMIN, SENHA);
+        $conexao = conectarPDO();
         $sql = "UPDATE admin SET nome = :nome WHERE email = :email";
         $comando = $conexao->prepare($sql);
         $comando->bindValue(':nome', $novoNome);
@@ -167,7 +167,7 @@ class admin {
             return false;
         }
 
-        $conexao = new PDO(DSN, ADMIN, SENHA);
+        $conexao = conectarPDO();
         $sql = "DELETE FROM admin WHERE email = :email";
         $comando = $conexao->prepare($sql);
         $comando->bindValue(':email', $email);
@@ -177,7 +177,7 @@ class admin {
     // Garante que admin padrão exista no banco (inserção se não existir)
     public static function garantirAdminPadraoNoBanco(): bool {
         try {
-            $conexao = new PDO(DSN, ADMIN, SENHA);
+            $conexao = conectarPDO();
             $adminFixo = self::adminPadrao();
 
             $sql = "SELECT email FROM admin WHERE email = :email";

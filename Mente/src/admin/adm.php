@@ -1,24 +1,26 @@
 <?php
-require_once("../class/adm.class.php");
 
-if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+declare(strict_types=1);
+
+require_once '../class/adm.class.php';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $codigo = $_POST['codigo'] ?? '';
     $nome = $_POST['nome'] ?? '';
     $email = $_POST['email'] ?? '';
     $senha = $_POST['senha'] ?? '';
     $acao = $_POST['acao'] ?? '';
 
-    $admin = new admin($codigo,$nome, $email, $senha);
+    $admin = new admin($codigo, $nome, $email, $senha);
 
-    if ($acao == 'salvar') {
+    if ($acao === 'salvar') {
         $resultado = $admin->inserir();
-    
+
         if ($resultado) {
-            header("Location: login_adm.php?sucesso=1");
+            header('Location: login_adm.php?sucesso=1');
+            exit;
         } else {
             $erroCadastro = $admin->getErro();
         }
     }
-    
 }
-?>

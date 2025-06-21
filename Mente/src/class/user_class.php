@@ -1,5 +1,5 @@
 <?php
-require_once "../config/config.inc.php";
+require_once "database.php";
 
 class usuario {
     private $nome;
@@ -50,7 +50,7 @@ class usuario {
     try {
         echo "Iniciando inserção...<br>";
 
-        $conexao = new PDO(DSN, USUARIO, SENHA);
+        $conexao = conectarPDO();
         echo "Conectado com sucesso!<br>";
 
         $verifica = $conexao->prepare("SELECT email FROM usuario WHERE email = :email");
@@ -83,7 +83,7 @@ class usuario {
 }
 
     public static function buscarPorEmail($email) {
-        $conexao = new PDO(DSN, USUARIO, SENHA);
+        $conexao = conectarPDO();
     
         $sql = "SELECT nome, email, senha FROM usuario WHERE email = :email LIMIT 1";
         $comando = $conexao->prepare($sql);
@@ -105,7 +105,7 @@ class usuario {
 
     public function atualizarNome(): bool {
         try {
-            $conexao = new PDO(DSN, USUARIO, SENHA);
+            $conexao = conectarPDO();
     
             $sql = "UPDATE usuario SET nome = :nome WHERE email = :email";
             $comando = $conexao->prepare($sql);
@@ -123,7 +123,7 @@ class usuario {
 
 
 public static function listarTodos() {
-    $conexao = new PDO(DSN, USUARIO, SENHA);
+    $conexao = conectarPDO();
 
     $sql = "SELECT nome, email FROM usuario ORDER BY nome";
     $comando = $conexao->prepare($sql);
@@ -133,7 +133,7 @@ public static function listarTodos() {
 }
 
 public static function atualizarNomePorEmail($email, $novoNome) {
-    $conexao = new PDO(DSN, USUARIO, SENHA);
+    $conexao = conectarPDO();
 
     $sql = "UPDATE usuario SET nome = :nome WHERE email = :email";
     $comando = $conexao->prepare($sql);
@@ -145,7 +145,7 @@ public static function atualizarNomePorEmail($email, $novoNome) {
 
 public static function excluirPorEmail($email) {
     try {
-        $conexao = new PDO(DSN, USUARIO, SENHA);
+        $conexao = conectarPDO();
 
         $sqlRespostas = "DELETE FROM resposta_usuario WHERE usuario_email = :email";
         $comandoRespostas = $conexao->prepare($sqlRespostas);
