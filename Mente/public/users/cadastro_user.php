@@ -2,10 +2,11 @@
 
 declare(strict_types=1);
 
-require_once '../class/user.class.php';
+require_once (__DIR__ . '/../../src/class/user.class.php');
+
 
 if (
-    $_SERVER['REQUEST_METHOD'] === 'POST' &&
+    $_SERVER['REQUEST_METHOD'] === 'POST' &&  
     isset($_POST['acao']) &&
     $_POST['acao'] === 'salvar'
 ) {
@@ -16,7 +17,7 @@ if (
     $usuario = new usuario($nome, $email, $senha);
 
     if ($usuario->inserir()) {
-        header('Location: login.php');
+        header('Location: login_user.php');
         exit;
     } else {
         $erroCadastro = $usuario->getErro();
@@ -30,10 +31,9 @@ if (
     <meta charset="UTF-8">
     <title>Cadastro de Usuário</title>
     <link rel="shortcut icon" href="../img/cerebro.png" type="image/x-icon">
-    <link rel="stylesheet" href="../css/style.css">
 </head>
 <body>
-    <form action="cadastro.php" method="post">
+    <form action="cadastro_user.php" method="post">
         <center>
             <h1>Bem-vindo ao mundo Mente Misturada! Garanto que vai gostar!</h1>
         </center>

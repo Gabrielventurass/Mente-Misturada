@@ -1,21 +1,22 @@
 <?php
+if (session_status() == PHP_SESSION_NONE) {
+    session_start(); // Iniciar a sessão apenas se ela não estiver ativa
+}
 
-declare(strict_types=1);
-
-if (!isset($_SESSION['nome_usuario'])) {
-    header('Location: login.php');
+// Verificar se o usuário está logado
+if (!isset($_SESSION['email'])) {
+    // Se não estiver logado, redirecionar para login_user.php
+    header('Location: login_user.php');
     exit;
 }
 ?>
 
-<link rel="stylesheet" href="../css/style.css">
-
 <div class="field flex-container">
     <div class="menu-icons">
-        <a href="inicio.php" class="menu">
+        <a href="inicio_user.php" class="menu">
             <img src="../img/casa.png" alt="Início" class="btImg">
         </a>
-        <a href="perfil.php" class="menu">
+        <a href="perfil_user.php" class="menu">
             <img src="../img/perfil.png" alt="Perfil" class="btImg">
         </a>
         <a href="configu.php" class="menu">
@@ -23,6 +24,6 @@ if (!isset($_SESSION['nome_usuario'])) {
         </a>
     </div>
     <h1 class="usuario-nome">
-        Usuário logado: <?= htmlspecialchars($_SESSION['nome_usuario']) ?>
+        Usuário logado: <?= htmlspecialchars($_SESSION['nome']) ?>
     </h1>
 </div>

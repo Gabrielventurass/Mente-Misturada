@@ -1,61 +1,56 @@
 <?php
+// Conectar ao banco de dados (exemplo com PDO)
+try {
+    $pdo = new PDO('mysql:host=localhost;dbname=mente', 'root', ''); // Alterar usuário e senha do banco
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+} catch (PDOException $e) {
+    die("Erro ao conectar: " . $e->getMessage());
+}
 
-declare(strict_types=1);
+// Verificar se o formulário foi enviado
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    // Obter os dados do formulário
+    $email = $_POST['email'];
+    $senha = $_POST['senha'];
 
-session_start();
+    // Preparar a consulta SQL
+    $sql = "SELECT * FROM usuario WHERE email = :email";
+    $stmt = $pdo->prepare($sql);
+    $stmt->bindParam(':email', $email);
+    $stmt->execute();
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = trim($_POST['email'] ?? '');
-    $senha = $_POST['senha'] ?? '';
+    // Verificar se o usuário foi encontrado
+    $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
-    if (empty($email) || empty($senha)) {
-        $erro = "Por favor, preencha todos os campos.";
-    } else {
-        try {
-            $pdo = new PDO("mysql:host=localhost;dbname=mente", "root", "");
-            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-            $stmt = $pdo->prepare("SELECT id, nome, email, senha FROM usuario WHERE email = ?");
-            $stmt->execute([$email]);
-            $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            if ($usuario && password_verify($senha, $usuario['senha'])) {
-                $_SESSION['id_usuario'] = $usuario['id'];
-                $_SESSION['nome_usuario'] = $usuario['nome'];
-                header('Location: users/inicio.php');
-                exit;
-            } else {
-                $erro = "E-mail ou senha inválidos.";
-            }
-        } catch (PDOException $e) {
-            $erro = "Erro ao conectar: " . $e->getMessage();
+    if ($usuario) {
+        // Verificar se a senha está correta
+        if (password_verify($senha, $usuario['senha'])) {
+            // Senha correta - iniciar a sessão
+            session_start();
+            $_SESSION['email'] = $usuario['email'];
+            $_SESSION['nome'] = $usuario['nome'];
+            
+            // Redirecionar para 'inicio.php' após login bem-sucedido
+            header("Location: inicio_user.php");
+            exit();  // Certifique-se de usar exit para garantir que o código pare após o redirecionamento
+        } else {
+            // Senha incorreta
+            echo "Senha incorreta.";
         }
+    } else {
+        // Usuário não encontrado
+        echo "Usuário não encontrado.";
     }
 }
 ?>
 
-<!-- Formulário simplificado (sem Bootstrap por enquanto) -->
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-</head>
-<body>
-    <h2>Login</h2>
-
-    <?php if (!empty($erro)): ?>
-        <p style="color: red;"><?= htmlspecialchars($erro) ?></p>
-    <?php endif; ?>
-
-    <form method="post">
-        <label for="email">E-mail:</label><br>
-        <input type="email" name="email" required><br><br>
-
-        <label for="senha">Senha:</label><br>
-        <input type="password" name="senha" required><br><br>
-
-        <button type="submit">Entrar</button>
-    </form>
-</body>
-</html>
+<!-- Formulário de login -->
+<form method="POST" action="login_user.php">
+    <label for="email">Email:</label>
+    <input type="email" name="email" required>
+    <br>
+    <label for="senha">Senha:</label>
+    <input type="password" name="senha" required>
+    <br>
+    <button type="submit">Login</button>
+</form>

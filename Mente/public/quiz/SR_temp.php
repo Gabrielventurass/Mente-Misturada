@@ -61,7 +61,7 @@ try {
     echo "<h2>Você acertou <strong>$acertos</strong> pergunta(s)!</h2>";
     echo "<p>Tempo gasto: <strong>" . intval($tempo) . "</strong> segundos</p>";
 
-    echo '<form method="post" action="quiz.php">';
+    echo '<form method="post" action="vsTemp.php">';
     echo '    <button type="submit" class="btDf">Próxima rodada</button>';
     echo '</form>';
 

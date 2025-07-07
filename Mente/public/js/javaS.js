@@ -16,3 +16,12 @@ function criacao(){
 function gerQuiz(){
     window.location.href='../quiz/gerenciar_quiz.php';
 }
+function tema(){
+    window.location.href='tema_user.php';
+}
+function criar(){
+    window.location.href='criar_quiz_user.php';
+}
+function comun(){
+    window.location.href='comunidade.php';
+}

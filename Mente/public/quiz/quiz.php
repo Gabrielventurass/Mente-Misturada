@@ -1,17 +1,17 @@
 <?php
-require_once "../class/quiz.class.php";
+require_once "../../src/class/quiz.class.php";
 session_start();
 
 // Verifica se o usuário está logado
-if (!isset($_SESSION['email_usuario'])) {
+if (!isset($_SESSION['email'])) {
     echo "Você precisa estar logado para acessar o quiz.";
     exit;
 }
 
-$email_usuario = $_SESSION['email_usuario'];
+$email = $_SESSION['email'];
 
 $quizObj = new Quiz();
-$quizAleatorio = $quizObj->obterQuizAleatorio($email_usuario);
+$quizAleatorio = $quizObj->obterQuizAleatorio($email);
 
 if (!$quizAleatorio) {
     echo "Nenhum quiz disponível no momento.
@@ -25,12 +25,6 @@ if (!$quizAleatorio) {
 <head>
     <meta charset="UTF-8">
     <title>Responder Quiz</title>
-    <link rel="stylesheet" href="../css/style.css">
-    <style>
-        body { font-family: Arial; padding: 20px; }
-        .pergunta { margin-bottom: 20px; }
-        .btDf { padding: 8px 16px; margin: 10px 5px; cursor: pointer; }
-    </style>
 </head>
 <body>
     <h1>Quiz: <?= htmlspecialchars($quizAleatorio['tema']) ?></h1>
@@ -53,7 +47,7 @@ if (!$quizAleatorio) {
         <?php endforeach; ?>
 
         <button type="submit" onclick="registrarTempo()" class="btDf">Enviar Respostas</button>
-        <button type="button" onclick="window.location.href='../users/inicio.php'" class="btDf">Voltar</button>
+        <button type="button" onclick="window.location.href='../users/inicio_user.php'" class="btDf">Voltar</button>
     </form>
 
 

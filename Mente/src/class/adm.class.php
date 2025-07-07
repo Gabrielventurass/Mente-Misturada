@@ -143,39 +143,39 @@ class admin {
     }
 
     // Listar todos admins
-    public static function listarTodos() {
-        $conexao = conectarPDO();
-        $sql = "SELECT codigo, nome, email FROM admin ORDER BY nome";
-        $comando = $conexao->prepare($sql);
-        $comando->execute();
-        return $comando->fetchAll(PDO::FETCH_ASSOC);
+    public static public static function listarTodos(): array
+{
+    $conexao = conectarPDO();
+    $sql = "SELECT codigo, nome, email FROM admin ORDER BY nome";
+    $comando = $conexao->prepare($sql);
+    $comando->execute();
+
+    return $comando->fetchAll(PDO::FETCH_ASSOC);
+}
+public static function atualizarNomePorEmail(string $email, string $novoNome): bool
+{
+    $conexao = conectarPDO();
+    $sql = "UPDATE admin SET nome = :nome WHERE email = :email";
+    $comando = $conexao->prepare($sql);
+    $comando->bindValue(':nome', $novoNome);
+    $comando->bindValue(':email', $email);
+
+    return $comando->execute();
+}
+public static function excluirPorEmail(string $email): bool
+{
+    if ($email === self::adminPadrao()->getEmail()) {
+        return false;
     }
 
-    // Atualizar nome por email (estático)
-    public static function atualizarNomePorEmail($email, $novoNome) {
-        $conexao = conectarPDO();
-        $sql = "UPDATE admin SET nome = :nome WHERE email = :email";
-        $comando = $conexao->prepare($sql);
-        $comando->bindValue(':nome', $novoNome);
-        $comando->bindValue(':email', $email);
-        return $comando->execute();
-    }
+    $conexao = conectarPDO();
+    $sql = "DELETE FROM admin WHERE email = :email";
+    $comando = $conexao->prepare($sql);
+    $comando->bindValue(':email', $email);
 
-    // Excluir admin por email (não permite excluir admin padrão)
-    public static function excluirPorEmail($email) {
-        if ($email === self::adminPadrao()->getEmail()) {
-            return false;
-        }
-
-        $conexao = conectarPDO();
-        $sql = "DELETE FROM admin WHERE email = :email";
-        $comando = $conexao->prepare($sql);
-        $comando->bindValue(':email', $email);
-        return $comando->execute();
-    }
-
-    // Garante que admin padrão exista no banco (inserção se não existir)
-    public static function garantirAdminPadraoNoBanco(): bool {
+    return $comando->execute();
+}
+function garantirAdminPadraoNoBanco(): bool {
         try {
             $conexao = conectarPDO();
             $adminFixo = self::adminPadrao();
@@ -199,5 +199,15 @@ class admin {
             return false;
         }
     }
+public static function listarPendentes(): array
+{
+    $conexao = conectarPDO();
+    $sql = "SELECT codigo, nome, email FROM admins_pendentes ORDER BY nome";
+    $comando = $conexao->prepare($sql);
+    $comando->execute();
+
+    return $comando->fetchAll(PDO::FETCH_ASSOC);
+}
+
 }
 ?>

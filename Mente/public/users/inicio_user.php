@@ -1,12 +1,17 @@
 <?php
-session_start();
-include 'menu.php';
+session_start(); // Iniciar a sessão
 
-if (!isset($_SESSION['nome_usuario']) || !isset($_SESSION['email_usuario'])) {
-    header('Location: login.php');
-    exit;
+// Verificar se o usuário está logado
+if (!isset($_SESSION['email'])) {
+    // Se não estiver logado, redirecionar para login_user.php
+    header("Location: login_user.php");
+    exit(); // Certifique-se de usar exit após o redirecionamento
 }
+
+// Agora você pode incluir outros arquivos como o menu
+include('menu_user.php');
 ?>
+
 
 
 <!DOCTYPE html>
@@ -81,26 +86,40 @@ if (!isset($_SESSION['nome_usuario']) || !isset($_SESSION['email_usuario'])) {
 
         <br><br><br>
 
-        <button id="bt2" name="bt2"  class="btRed"><div>
+        <button id="bt2" name="bt2"  class="btRed" onclick="tema()"><div>
                 <div style="float: left;
                             margin: 15px 5px 0px 0px    ;">
-                    Escolha<br>o<br>temas
+                    Escolha<br>o<br>tema
                 </div>
                 <div style="float: right;
                      margin-top: 3px;">
-                    <img src="../img/interrogacao.png" class="btImg">
+                    <img src="../img/livro.png" height="50px" class="btImg">
                 </div>
             </div>
         </button>
 
-        <button id="bt2" name="bt2"  class="btBlu"><div>
+        <button id="bt2" name="bt2"  class="btBlu" onclick="criar()"><div>
                 <div style="float: left;
                             margin: 15px 5px 0px 0px    ;">
                     Faça<br>seu<br>quiz
                 </div>
                 <div style="float: right;
                      margin-top: 3px;">
-                    <img src="../img/interrogacao.png" class="btImg">
+                    <img src="../img/lapis.png" height="50px"class="btImg">
+                </div>
+            </div>
+        </button>
+
+        <br><br><br>
+
+        <button id="bt2" name="bt2"  class="btBlu" onclick="comun()"><div>
+                <div style="float: left;
+                            margin: 15px 5px 0px 0px    ;">
+                    Quizes<br>da<br>comunidade
+                </div>
+                <div style="float: right;
+                     margin-top: 3px;">
+                    <img src="../img/comunidade.png" height="50px"class="btImg">
                 </div>
             </div>
         </button>
