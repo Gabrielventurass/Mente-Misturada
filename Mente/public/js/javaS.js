@@ -20,7 +20,7 @@ function tema(){
     window.location.href='tema_user.php';
 }
 function criar(){
-    window.location.href='criar_quiz_user.php';
+    window.location.href='../quiz/meu_quiz.php';
 }
 function comun(){
     window.location.href='comunidade.php';

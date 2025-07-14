@@ -52,7 +52,7 @@ if (
             <input type="hidden" name="acao" value="salvar">
             <input type="submit" value="Cadastrar" class="btDf" style="margin-left: 100px;">
 
-            <p>Já possui uma conta? <a href="login.php">Clique aqui</a></p>
+            <p>Já possui uma conta? <a href="login_user.php">Clique aqui</a></p>
             <p>É administrador? <a href="../admin/login_adm.php">Clique aqui</a></p>
 
             <?php if (isset($erroCadastro)) : ?>

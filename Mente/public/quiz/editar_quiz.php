@@ -1,75 +1,90 @@
 <?php
-require_once "../class/quiz.class.php";
 session_start();
 
-if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    die("ID do quiz inválido.");
-}
+// Verifica se o usuário está logado
+if (!isset($_SESSION['email'])) {
+    header('Location: login_user.php');
+    exit;
+}// Ajuste o caminho conforme necessário
 
-$quiz_id = (int) $_GET['id'];
-$quiz = new Quiz();
-$dadosQuiz = $quiz->buscarQuizCompleto($quiz_id); // Essa função você vai criar no quiz.class.php
+// Conectar ao banco de dados
+try {
+    $pdo = new PDO("mysql:host=localhost;dbname=mente", "root", "");
+    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-if (!$dadosQuiz) {
-    die("Quiz não encontrado.");
-}
+    // Verificar se o quiz_id foi passado
+    if (isset($_GET['quiz_id'])) {
+        $quiz_id = $_GET['quiz_id'];
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $mensagem = $quiz->atualizarQuiz($quiz_id, $_POST); // Outra função que você adicionará na classe
+        // Consultar os dados do quiz
+        $stmt = $pdo->prepare("SELECT * FROM quizzes_user WHERE id = :quiz_id AND usuario_email = :email");
+        $stmt->execute(['quiz_id' => $quiz_id, 'email' => $_SESSION['email']]);
+        $quiz = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if (!$quiz) {
+            echo "Quiz não encontrado ou você não tem permissão para editar este quiz.";
+            exit;
+        }
+
+    } else {
+        echo "ID do quiz não fornecido.";
+        exit;
+    }
+
+    // Editar quiz
+    if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+        $titulo = trim($_POST['titulo']);
+        $descricao = trim($_POST['descricao']);
+
+        if (!empty($titulo) && !empty($descricao)) {
+            $stmt = $pdo->prepare("UPDATE quizzes_user SET titulo = :titulo, descricao = :descricao WHERE id = :quiz_id");
+            $stmt->execute(['titulo' => $titulo, 'descricao' => $descricao, 'quiz_id' => $quiz_id]);
+            $mensagem = "Quiz atualizado com sucesso!";
+        } else {
+            $erro = "Título e descrição não podem estar vazios.";
+        }
+    }
+
+    // Excluir quiz
+    if (isset($_POST['excluir_quiz'])) {
+        $stmt_delete_quiz = $pdo->prepare("DELETE FROM quizzes_user WHERE id = :quiz_id");
+        $stmt_delete_quiz->execute(['quiz_id' => $quiz_id]);
+        $mensagem = "Quiz excluído com sucesso!";
+        header("Location: meu_quiz.php"); // Redireciona de volta para a lista de quizzes
+        exit;
+    }
+
+} catch (PDOException $e) {
+    echo "Erro: " . $e->getMessage();
+    exit;
 }
 ?>
 
-<!DOCTYPE html>
-<html lang="pt-br">
 <head>
-    <meta charset="UTF-8">
     <title>Editar Quiz</title>
-    <link rel="stylesheet" href="../css/style.css">
-    <style>
-        .pergunta {
-            margin-bottom: 20px;
-            padding: 10px;
-            border: 1px solid #ccc;
-        }
-        input[type=text], textarea {
-            width: 100%;
-            padding: 6px;
-            margin-bottom: 5px;
-            border: 1px solid black;
-            border-radius: 10px;
-        }
-    </style>
+    <link rel="shortcut icon" href="../img/cerebro.png" type="image/x-icon">
 </head>
-<body>
-    <a href="gerenciar_quiz.php"><img src="../img/seta.png" alt="" class="btImg"></a>
-    <h1>Editar Quiz</h1>
 
-    <?php if (!empty($mensagem)) echo "<p><strong>$mensagem</strong></p>"; ?>
+<h1>Editar Quiz</h1>
 
-    <form method="post">
-        <label>Tema:</label><br>
-        <input type="text" name="tema" value="<?= htmlspecialchars($dadosQuiz['tema']) ?>" required><br>
+<?php
+if (isset($mensagem)) {
+    echo "<p style='color: green;'>$mensagem</p>";
+}
+if (isset($erro)) {
+    echo "<p style='color: red;'>$erro</p>";
+}
+?>
 
-        <label>Texto do Artigo:</label><br>
-        <textarea name="art" rows="6" required><?= htmlspecialchars($dadosQuiz['art']) ?></textarea><br>
+    <a href="meu_quiz.php"><img src="../img/seta.png" height="50px"></a>
+<form action="editar_quiz.php?quiz_id=<?php echo $quiz['id']; ?>" method="post">
+    <label for="titulo">Título do Quiz:</label><br>
+    <input type="text" id="titulo" name="titulo" value="<?php echo htmlspecialchars($quiz['titulo']); ?>" required><br><br>
+    <label for="descricao">Descrição do Quiz:</label><br>
+    <textarea id="descricao" name="descricao" rows="4" cols="50" required><?php echo htmlspecialchars($quiz['descricao']); ?></textarea><br><br>
+    <input type="submit" value="Atualizar Quiz" class="btDf">
+</form>
 
-        <h3>Perguntas:</h3>
-        <div id="perguntas-container">
-            <?php foreach ($dadosQuiz['perguntas'] as $pIndex => $pergunta): ?>
-                <div class="pergunta">
-                    <label>Pergunta:</label><br>
-                    <input type="text" name="perguntas[<?= $pIndex ?>][texto]" value="<?= htmlspecialchars($pergunta['texto']) ?>" required><br>
-
-                    <label>Alternativas:</label><br>
-                    <?php foreach ($pergunta['alternativas'] as $aIndex => $alt): ?>
-                        <input type="radio" name="perguntas[<?= $pIndex ?>][correta]" value="<?= $aIndex ?>" <?= $alt['correta'] ? 'checked' : '' ?> required>
-                        <input type="text" name="perguntas[<?= $pIndex ?>][alternativas][]" value="<?= htmlspecialchars($alt['texto']) ?>" required><br>
-                    <?php endforeach; ?>
-                </div>
-            <?php endforeach; ?>
-        </div>
-
-        <button type="submit" class="btDf">Salvar Alterações</button>
-    </form>
-</body>
-</html>
+<form action="editar_quiz.php?quiz_id=<?php echo $quiz['id']; ?>" method="post">
+    <input type="submit" name="excluir_quiz" value="Excluir Quiz" class="btDf" onclick="return confirm('Tem certeza que deseja excluir este quiz?');">
+</form>

@@ -1,4 +1,4 @@
-<?php
+<?php 
 require_once "../../src/class/quiz.class.php";
 session_start();
 
@@ -19,7 +19,6 @@ if (!$quizAleatorio) {
     echo "Quiz não encontrado.";
     exit;
 }
-
 ?>
 
 <!DOCTYPE html>
