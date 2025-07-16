@@ -2,29 +2,24 @@
 require_once "../../src/class/quiz.class.php";
 session_start();
 
-echo "<center>";
 if (!isset($_SESSION['email'])) {
-    echo "Você precisa estar logado para enviar respostas.";
-    exit;
+    die('<div class="min-h-screen flex items-center justify-center bg-gray-100"><p class="text-red-600 font-semibold">Você precisa estar logado para enviar respostas.</p></div>');
 }
 
 $email = $_SESSION['email'];
-
 $quiz_id = $_POST['quiz_id'] ?? null;
 $respostas = $_POST['respostas'] ?? [];
 $tempo = $_POST['tempo'] ?? 0;
 
 if (!$quiz_id || empty($respostas)) {
-    echo "Respostas incompletas.";
-    exit;
+    die('<div class="min-h-screen flex items-center justify-center bg-gray-100"><p class="text-red-600 font-semibold">Respostas incompletas.</p></div>');
 }
 
 try {
-    // Conexão com o banco de dados
     $pdo = new PDO("mysql:host=localhost;dbname=mente", "root", "");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Obter o gabarito correto
+    // Gabarito
     $stmt = $pdo->prepare("
         SELECT p.id AS pergunta_id, a.texto AS resposta_correta
         FROM pergunta p
@@ -33,14 +28,12 @@ try {
     ");
     $stmt->execute(['quiz_id' => $quiz_id]);
     $gabarito = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    // Mapear gabarito para fácil comparação
     $gabaritoMap = [];
     foreach ($gabarito as $item) {
         $gabaritoMap[$item['pergunta_id']] = $item['resposta_correta'];
     }
 
-    // Comparar respostas
+    // Acertos
     $acertos = 0;
     foreach ($respostas as $pergunta_id => $resposta_usuario) {
         if (isset($gabaritoMap[$pergunta_id]) && $gabaritoMap[$pergunta_id] === $resposta_usuario) {
@@ -48,63 +41,48 @@ try {
         }
     }
 
-    // Obter o número de questões no quiz
     $total_questoes = count($gabaritoMap);
-
-    // Calcular a pontuação proporcional para cada questão
     $pontuacao_por_questao = 200 / $total_questoes;
-    $pontuacao_total = $acertos * $pontuacao_por_questao;  // Pontuação final
+    $pontuacao_total = $acertos * $pontuacao_por_questao;
+    $penalidade_tempo = floor($tempo / 2);
+    $pontuacao_total -= $penalidade_tempo;
+    if ($pontuacao_total < 0) $pontuacao_total = 0;
 
-    // Desconto de 1 ponto a cada 2 segundos
-    $penalidade_tempo = floor($tempo / 2);  // Penalidade de 1 ponto a cada 2 segundos
-    $pontuacao_total -= $penalidade_tempo;  // Desconta a penalidade do tempo
+    $pdo->prepare("UPDATE usuario SET pontuacao = pontuacao + :pontuacao WHERE email = :email")
+        ->execute(['pontuacao' => $pontuacao_total, 'email' => $email]);
 
-    // Certificar que a pontuação não fique negativa
-    if ($pontuacao_total < 0) {
-        $pontuacao_total = 0;
-    }
-
-    // Atualizar a pontuação do jogador na tabela "usuario"
-    $updateStmt = $pdo->prepare("
-        UPDATE usuario 
-        SET pontuacao = pontuacao + :pontuacao
-        WHERE email = :email
-    ");
-    
-    $updateStmt->execute(['pontuacao' => $pontuacao_total, 'email' => $email]);
-
-    // Verificando se o valor foi atualizado corretamente
-    if ($updateStmt->rowCount() > 0) {
-        $mensagem = "Pontuação atualizada com sucesso!";
-    } else {
-        $mensagem = "Erro ao atualizar a pontuação ou o usuário não foi encontrado.";
-    }
-
-    // Salvar a resposta do usuário na tabela "resposta_usuario" com a pontuação
-    $insertStmt = $pdo->prepare("
+    $pdo->prepare("
         INSERT INTO resposta_usuario (usuario_email, quiz_id, acertos, tempo, pontuacao)
         VALUES (:email, :quiz_id, :acertos, :tempo, :pontuacao)
-    ");
-    $insertStmt->execute([
-        'email' => $email, 
-        'quiz_id' => $quiz_id, 
-        'acertos' => $acertos, 
-        'tempo' => $tempo, 
+    ")->execute([
+        'email' => $email,
+        'quiz_id' => $quiz_id,
+        'acertos' => $acertos,
+        'tempo' => $tempo,
         'pontuacao' => $pontuacao_total
     ]);
-
-    // Exibir o tempo e a pontuação para o usuário
-    echo "<h3>Resultado do Quiz</h3>";
-    echo "<p><strong>Tempo de Resposta:</strong> {$tempo} segundos</p>";
-    echo "<p><strong>Pontuação Final:</strong> {$pontuacao_total} pontos</p>";
-    echo "<p>{$mensagem}</p>";
-
-    // Botões para voltar ou continuar
-    echo '<br>';
-    echo '<a href="../users/inicio_user.php"><button>Voltar</button></a>';
-    echo '<a href="comp.php?quiz_id=' . $quiz_id . '"><button>Continuar</button></a>';
-
 } catch (PDOException $e) {
-    echo "Erro: " . $e->getMessage();
+    die('<div class="min-h-screen flex items-center justify-center bg-gray-100"><p class="text-red-600 font-semibold">Erro: ' . htmlspecialchars($e->getMessage()) . '</p></div>');
 }
 ?>
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Resultado do Quiz</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white shadow rounded p-6 text-center max-w-md w-full">
+    <h2 class="text-2xl font-bold text-green-600 mb-4">Resultado do Quiz</h2>
+    <p class="text-gray-800 mb-2">Você acertou <strong><?= $acertos ?></strong> pergunta(s)!</p>
+    <p class="text-gray-800 mb-2">Tempo gasto: <strong><?= intval($tempo) ?></strong> segundos</p>
+    <p class="text-gray-800 mb-6">Pontuação final: <strong><?= $pontuacao_total ?></strong> pontos</p>
+    <div class="flex flex-col space-y-2">
+      <a href="comp.php?quiz_id=<?= $quiz_id ?>" class="w-full bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded font-semibold">Próxima rodada</a>
+      <a href="../users/inicio_user.php" class="w-full bg-gray-500 hover:bg-gray-600 text-white px-4 py-2 rounded font-semibold">Voltar</a>
+    </div>
+  </div>
+</body>
+</html>

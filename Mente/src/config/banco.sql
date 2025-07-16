@@ -1,128 +1,130 @@
-CREATE DATABASE mente;
-USE mente;
+create database mente;
+use mente;
 
--- Tabela de Usuários
 CREATE TABLE usuario (
   email VARCHAR(45) PRIMARY KEY,
   nome VARCHAR(45),
-  senha VARCHAR(255),
-  pontuacao INT DEFAULT 0 -- Pontuação do usuário, com valor inicial 0
+  senha VARCHAR(255)
 ) ENGINE=InnoDB;
+ALTER TABLE usuario
+ADD COLUMN pontuacao INT;
+create table admin(
+	codigo int auto_increment primary key,
+	email varchar(45) UNIQUE,
+	nome varchar(45),
+	senha varchar(255),
+	dt_cr datetime DEFAULT CURRENT_TIMESTAMP,
+    pendente TINYINT(1) NOT NULL DEFAULT 1
+);
 
--- Tabela de Administradores
-CREATE TABLE admin (
-  codigo INT AUTO_INCREMENT PRIMARY KEY,
-  email VARCHAR(45) UNIQUE,
-  nome VARCHAR(45),
-  senha VARCHAR(255),
-  dt_cr DATETIME DEFAULT CURRENT_TIMESTAMP,
-  pendente TINYINT(1) NOT NULL DEFAULT 1
-) ENGINE=InnoDB;
+create table admins_pendentes(
+	codigo int auto_increment primary key,
+	email varchar(45) UNIQUE,
+	nome varchar(45),
+	senha varchar(255),
+	dt_cr datetime DEFAULT CURRENT_TIMESTAMP
+);
 
--- Tabela de Administradores Pendentes
-CREATE TABLE admins_pendentes (
-  codigo INT AUTO_INCREMENT PRIMARY KEY,
-  email VARCHAR(45) UNIQUE,
-  nome VARCHAR(45),
-  senha VARCHAR(255),
-  dt_cr DATETIME DEFAULT CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
-
--- Tabela de Quizzes
 CREATE TABLE quiz (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  tema VARCHAR(255),
-  art TEXT,
-  total_questoes INT -- Total de questões do quiz
-) ENGINE=InnoDB;
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    tema VARCHAR(255),
+    art TEXT,
+    total_questoes INT
+);
 
--- Tabela de Perguntas (relacionada ao quiz)
 CREATE TABLE pergunta (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  quiz_id INT,
-  texto TEXT,
-  resposta_correta VARCHAR(255),
-  FOREIGN KEY (quiz_id) REFERENCES quiz(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    quiz_id INT,
+    texto TEXT,
+    resposta_correta VARCHAR(255),
+    FOREIGN KEY (quiz_id) REFERENCES quiz(id) ON DELETE CASCADE
+);
 
--- Tabela de Alternativas (relacionada a cada pergunta)
+
 CREATE TABLE alternativa (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  pergunta_id INT,
-  texto VARCHAR(255),
-  correta BOOLEAN DEFAULT FALSE,
-  FOREIGN KEY (pergunta_id) REFERENCES pergunta(id) ON DELETE CASCADE
-) ENGINE=InnoDB;
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    pergunta_id INT,
+    texto VARCHAR(255),
+    correta BOOLEAN DEFAULT FALSE,
+    FOREIGN KEY (pergunta_id) REFERENCES pergunta(id) ON DELETE CASCADE
+);
 
--- Tabela de Respostas dos Usuários
 CREATE TABLE resposta_usuario (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  usuario_email VARCHAR(45),
-  quiz_id INT,
-  acertos INT,
-  tempo INT,
-  pontuacao INT NOT NULL DEFAULT 0, -- Pontuação obtida no quiz
-  data_resposta DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (quiz_id) REFERENCES quiz(id),
-  FOREIGN KEY (usuario_email) REFERENCES usuario(email)
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_email VARCHAR(45),
+    quiz_id INT,
+    acertos INT,
+    tempo INT,
+    data_resposta DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (quiz_id) REFERENCES quiz(id),
+    FOREIGN KEY (usuario_email) REFERENCES usuario(email)
 ) ENGINE=InnoDB;
 
--- Tabela de Respostas da Comunidade
 CREATE TABLE resposta_comunidade (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  usuario_email VARCHAR(45),
-  quiz_id INT,
-  pergunta_id INT,
-  alternativa_id INT,
-  acertos INT,
-  tempo INT,
-  pontuacao INT NOT NULL DEFAULT 0,
-  data_resposta DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (quiz_id) REFERENCES quiz(id),
-  FOREIGN KEY (usuario_email) REFERENCES usuario(email),
-  FOREIGN KEY (pergunta_id) REFERENCES perguntas_user(id),
-  FOREIGN KEY (alternativa_id) REFERENCES alternativas(id)
-) ENGINE=InnoDB;
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    usuario_email VARCHAR(45),             -- Alterar de comunidade_email para usuario_email
+    quiz_id INT,
+    pergunta_id INT,                       -- Coluna para armazenar a pergunta respondida
+    alternativa_id INT,                     -- Coluna para armazenar a alternativa escolhida
+    acertos INT,                            -- Para contar os acertos, se necessário
+    tempo INT,                              -- Tempo gasto para responder
+    pontuacao INT NOT NULL DEFAULT 0,
+    data_resposta DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (quiz_id) REFERENCES quiz(id),
+    FOREIGN KEY (usuario_email) REFERENCES usuario(email),
+    FOREIGN KEY (pergunta_id) REFERENCES perguntas_user(id),  -- Corrigir para perguntas_user
+    FOREIGN KEY (alternativa_id) REFERENCES alternativas(id)   -- Corrigir para alternativas
+);
 
--- Tabela de Quizzes Criados pelos Usuários
 CREATE TABLE quizzes_user (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  titulo VARCHAR(255) NOT NULL,
-  descricao TEXT,
-  usuario_email VARCHAR(255),
-  tema VARCHAR(255) NOT NULL, -- Tema do quiz
-  data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (usuario_email) REFERENCES usuario(email)
-) ENGINE=InnoDB;
+    id INT AUTO_INCREMENT PRIMARY KEY,        -- ID do Quiz
+    titulo VARCHAR(255) NOT NULL,             -- Título do Quiz
+    descricao TEXT,                           -- Descrição do Quiz
+    usuario_email VARCHAR(255),               -- Email do Usuário que criou o Quiz
+    data_criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP, -- Data de criação do Quiz
+    FOREIGN KEY (usuario_email) REFERENCES usuario(email) -- Relacionamento com a tabela de usuários
+);
 
--- Tabela de Perguntas Criadas pelos Usuários (relacionada aos quizzes criados pelos usuários)
 CREATE TABLE perguntas_user (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  quiz_id INT,
-  texto TEXT NOT NULL,
-  FOREIGN KEY (quiz_id) REFERENCES quizzes_user(id)
-) ENGINE=InnoDB;
+    id INT AUTO_INCREMENT PRIMARY KEY, 
+    quiz_id INT,                        
+    texto TEXT NOT NULL,                
+    FOREIGN KEY (quiz_id) REFERENCES quizzes_user(id) 
+);
 
--- Tabela de Alternativas Criadas pelos Usuários (relacionadas às perguntas criadas pelos usuários)
-CREATE TABLE alternativas_user (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  pergunta_id INT,
-  texto TEXT NOT NULL,
-  correta BOOLEAN NOT NULL DEFAULT 0,
-  FOREIGN KEY (pergunta_id) REFERENCES perguntas_user(id)
-) ENGINE=InnoDB;
+CREATE TABLE alternativas (
+    id INT AUTO_INCREMENT PRIMARY KEY,   
+    pergunta_id INT,                     
+    texto TEXT NOT NULL,                 
+    correta BOOLEAN NOT NULL DEFAULT 0,   
+    FOREIGN KEY (pergunta_id) REFERENCES perguntas_user(id) 
+);
 
--- Atualizando a coluna `total_questoes` da tabela `quiz` para refletir o número total de questões de cada quiz
+
 UPDATE quiz q
 SET total_questoes = (
     SELECT COUNT(*) FROM pergunta p WHERE p.quiz_id = q.id
 );
+SHOW ENGINE INNODB STATUS;
+SELECT id, tema, total_questoes FROM quiz;
 
--- Consultas de exemplo para verificar os dados
-SELECT * FROM usuario;
-SELECT * FROM admin;
-SELECT * FROM quiz;
-SELECT * FROM pergunta;
-SELECT * FROM alternativa;
-SELECT * FROM resposta_usuario;
-SELECT * FROM resposta_comunidade;
+ALTER TABLE resposta_usuario
+ADD COLUMN pontuacao INT NOT NULL DEFAULT 0;
+
+ALTER TABLE quizzes_user
+ADD COLUMN tema VARCHAR(255) NOT NULL AFTER descricao;
+
+ALTER TABLE usuario
+MODIFY COLUMN pontuacao INT NOT NULL DEFAULT 0;
+
+ALTER TABLE usuario ADD COLUMN cor TINYINT(1) DEFAULT 0;
+
+
+DESCRIBE usuario;
+
+select * from usuario;
+select * from admin;
+select * from quiz;
+select * from pergunta;
+select * from alternativa;
+select * from resposta_usuario;

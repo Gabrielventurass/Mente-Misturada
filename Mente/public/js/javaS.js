@@ -23,5 +23,5 @@ function criar(){
     window.location.href='../quiz/meu_quiz.php';
 }
 function comun(){
-    window.location.href='comunidade.php';
+    window.location.href='comunidade_user.php';
 }

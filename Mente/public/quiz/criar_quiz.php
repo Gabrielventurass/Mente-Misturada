@@ -1,7 +1,6 @@
 <?php
 session_start();
 
-// Verificar se o usuário está logado
 if (!isset($_SESSION['email'])) {
     echo "Você precisa estar logado para criar ou editar um quiz.";
     exit;
@@ -67,13 +66,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $mensagem = "Quiz criado com sucesso!";
         }
 
-        // Limpar dados antigos se estiver editando
         if ($quiz_id) {
             $pdo->prepare("DELETE FROM alternativas WHERE pergunta_id IN (SELECT id FROM perguntas_user WHERE quiz_id = :quiz_id)")->execute(['quiz_id' => $quiz_id]);
             $pdo->prepare("DELETE FROM perguntas_user WHERE quiz_id = :quiz_id")->execute(['quiz_id' => $quiz_id]);
         }
 
-        // Inserir perguntas/alternativas
         foreach ($perguntas as $pergunta) {
             $stmt = $pdo->prepare("INSERT INTO perguntas_user (quiz_id, texto) VALUES (:quiz_id, :texto)");
             $stmt->execute(['quiz_id' => $quiz_id, 'texto' => $pergunta['texto']]);
@@ -94,6 +91,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 <head>
     <meta charset="UTF-8">
     <title>Criar ou Editar Quiz</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             let perguntaIndex = <?php echo count($perguntas_organizacao); ?>;
@@ -103,18 +101,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
             function criarBlocoPergunta(index) {
                 const div = document.createElement('div');
-                div.className = 'pergunta';
+                div.className = 'pergunta border p-4 rounded shadow mb-4';
                 div.innerHTML = `
-                    <label>Texto da Pergunta:</label><br>
-                    <input type="text" name="perguntas[${index}][texto]" required><br><br>
-                    <h4>Alternativas:</h4>
+                    <label class='block font-semibold mb-1'>Texto da Pergunta:</label>
+                    <input type="text" name="perguntas[${index}][texto]" class="w-full border p-2 rounded mb-4" required>
+                    <h4 class="font-semibold mb-2">Alternativas:</h4>
                     ${[0,1,2,3].map(i => `
-                        <label>Alternativa ${i+1}:</label><br>
-                        <input type="text" name="perguntas[${index}][alternativas][${i}][texto]" required><br>
-                        <label>Correta?</label>
-                        <input type="checkbox" name="perguntas[${index}][alternativas][${i}][correta]" value="1"><br><br>
+                        <label class="block">Alternativa ${i+1}:</label>
+                        <input type="text" name="perguntas[${index}][alternativas][${i}][texto]" class="w-full border p-2 rounded mb-1" required>
+                        <label class="inline-block mr-2">Correta?</label>
+                        <input type="checkbox" name="perguntas[${index}][alternativas][${i}][correta]" value="1" class="mb-4">
                     `).join('')}
-                    <button type="button" class="remover-pergunta">Remover Pergunta</button>
+                    <button type="button" class="remover-pergunta bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Remover Pergunta</button>
                 `;
                 div.querySelector('.remover-pergunta').addEventListener('click', () => {
                     div.remove();
@@ -133,40 +131,52 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         });
     </script>
 </head>
-<body>
-    <br>
-    <a href="meu_quiz.php"><img src="../img/seta.png" height="50px"></a>
-    <h1><?php echo $quiz_id ? "Editar Quiz" : "Criar Novo Quiz"; ?></h1>
-    <?php if (isset($mensagem)) echo "<p style='color: green;'>$mensagem</p>"; ?>
-    <form method="POST">
-        <label>Título do Quiz:</label><br>
-        <input type="text" name="titulo" value="<?php echo $quiz_data['titulo'] ?? ''; ?>" required><br><br>
-
-        <label>Descrição do Quiz:</label><br>
-        <textarea name="descricao" required><?php echo $quiz_data['descricao'] ?? ''; ?></textarea><br><br>
-
-        <label>Tema do Quiz:</label><br>
-        <input type="text" name="tema" value="<?php echo $quiz_data['tema'] ?? ''; ?>" required><br><br>
-
-        <h3>Perguntas</h3>
-        <div id="perguntas-container">
-            <?php $idx=0; foreach ($perguntas_organizacao as $pergunta): ?>
-                <div class="pergunta">
-                    <label>Texto da Pergunta:</label><br>
-                    <input type="text" name="perguntas[<?php echo $idx; ?>][texto]" value="<?php echo htmlspecialchars($pergunta['texto']); ?>" required><br><br>
-                    <h4>Alternativas:</h4>
-                    <?php foreach ($pergunta['alternativas'] as $altIndex=>$alt): ?>
-                        <label>Alternativa <?php echo $altIndex+1; ?>:</label><br>
-                        <input type="text" name="perguntas[<?php echo $idx; ?>][alternativas][<?php echo $altIndex; ?>][texto]" value="<?php echo htmlspecialchars($alt['texto']); ?>" required><br>
-                        <label>Correta?</label>
-                        <input type="checkbox" name="perguntas[<?php echo $idx; ?>][alternativas][<?php echo $altIndex; ?>][correta]" value="1" <?php echo $alt['correta']?'checked':''; ?>><br><br>
-                    <?php endforeach; ?>
-                    <button type="button" class="remover-pergunta" onclick="this.closest('.pergunta').remove();">Remover Pergunta</button>
+<body class="bg-gray-100">
+    <div class="max-w-4xl mx-auto py-10 px-4">
+        <a href="meu_quiz.php" class="inline-block mb-6">
+            <img src="../img/seta.png" height="50px">
+        </a>
+        <h1 class="text-3xl font-bold mb-6">
+            <?php echo $quiz_id ? "Editar Quiz" : "Criar Novo Quiz"; ?>
+        </h1>
+        <?php if (isset($mensagem)) echo "<p class='text-green-600 font-semibold mb-4'>$mensagem</p>"; ?>
+        <form method="POST" class="bg-white p-6 rounded shadow space-y-6">
+            <div>
+                <label class="block font-semibold mb-1">Título do Quiz:</label>
+                <input type="text" name="titulo" value="<?php echo $quiz_data['titulo'] ?? ''; ?>" class="w-full border p-2 rounded" required>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">Descrição do Quiz:</label>
+                <textarea name="descricao" class="w-full border p-2 rounded" required><?php echo $quiz_data['descricao'] ?? ''; ?></textarea>
+            </div>
+            <div>
+                <label class="block font-semibold mb-1">Tema do Quiz:</label>
+                <input type="text" name="tema" value="<?php echo $quiz_data['tema'] ?? ''; ?>" class="w-full border p-2 rounded" required>
+            </div>
+            <div>
+                <h3 class="text-xl font-semibold mb-2">Perguntas</h3>
+                <div id="perguntas-container">
+                    <?php $idx=0; foreach ($perguntas_organizacao as $pergunta): ?>
+                        <div class="pergunta border p-4 rounded shadow mb-4">
+                            <label class="block font-semibold mb-1">Texto da Pergunta:</label>
+                            <input type="text" name="perguntas[<?php echo $idx; ?>][texto]" value="<?php echo htmlspecialchars($pergunta['texto']); ?>" class="w-full border p-2 rounded mb-4" required>
+                            <h4 class="font-semibold mb-2">Alternativas:</h4>
+                            <?php foreach ($pergunta['alternativas'] as $altIndex=>$alt): ?>
+                                <label class="block">Alternativa <?php echo $altIndex+1; ?>:</label>
+                                <input type="text" name="perguntas[<?php echo $idx; ?>][alternativas][<?php echo $altIndex; ?>][texto]" value="<?php echo htmlspecialchars($alt['texto']); ?>" class="w-full border p-2 rounded mb-1" required>
+                                <label class="inline-block mr-2">Correta?</label>
+                                <input type="checkbox" name="perguntas[<?php echo $idx; ?>][alternativas][<?php echo $altIndex; ?>][correta]" value="1" <?php echo $alt['correta']?'checked':''; ?> class="mb-4">
+                            <?php endforeach; ?>
+                            <button type="button" class="remover-pergunta bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600" onclick="this.closest('.pergunta').remove();">Remover Pergunta</button>
+                        </div>
+                    <?php $idx++; endforeach; ?>
                 </div>
-            <?php $idx++; endforeach; ?>
-        </div>
-        <button type="button" id="addPergunta">Adicionar Pergunta</button><br><br>
-        <button type="submit"><?php echo $quiz_id ? "Atualizar Quiz" : "Criar Quiz"; ?></button>
-    </form>
+                <button type="button" id="addPergunta" class="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600">Adicionar Pergunta</button>
+            </div>
+            <button type="submit" class="bg-green-600 text-white px-6 py-2 rounded hover:bg-green-700">
+                <?php echo $quiz_id ? "Atualizar Quiz" : "Criar Quiz"; ?>
+            </button>
+        </form>
+    </div>
 </body>
 </html>
