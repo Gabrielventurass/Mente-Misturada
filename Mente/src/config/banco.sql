@@ -121,6 +121,12 @@ ALTER TABLE usuario ADD COLUMN cor TINYINT(1) DEFAULT 0;
 
 
 DESCRIBE usuario;
+SET GLOBAL wait_timeout = 60;
+SHOW PROCESSLIST;
+kill 1772;
+SET GLOBAL max_connections = 800;
+SHOW STATUS LIKE 'Threads_connected';
+
 
 select * from usuario;
 select * from admin;
