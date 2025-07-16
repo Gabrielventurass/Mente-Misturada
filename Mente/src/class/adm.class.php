@@ -205,7 +205,7 @@ class admin {
         $comando = $conexao->prepare($sql);
         $comando->execute();
         $result = $comando->fetchAll(PDO::FETCH_ASSOC);
-        $conexao = null;
+        $conexao->close();
         return $result;
     }
 }
