@@ -1,4 +1,28 @@
-<script>
-    window.location.href = "public/users/cadastro_user.php";
-</script>
-
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escolha</title>
+    <link rel="shortcut icon" href="../img/cerebro.png" type="image/x-icon">
+    <script>
+        function goToAdmin() {
+            window.location.href = "src/admin/cadastro_adm.php";
+        }
+        function goToUser() {
+            window.location.href = "public/users/cadastro_user.php";
+        }
+    </script>
+</head>
+<body>
+    
+    <fieldset>
+        <center>
+            <h2>queres logar como admin ou usuario?</h2>
+            <button onclick="goToAdmin()">Admin</button>
+            <button onclick="goToUser()">Usuario</button>
+        </center>
+    </fieldset>
+    
+</body>
+</html>

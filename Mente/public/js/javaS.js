@@ -25,3 +25,6 @@ function criar(){
 function comun(){
     window.location.href='comunidade_user.php';
 }
+function offline(){
+    window.location.href='offline.php';
+}

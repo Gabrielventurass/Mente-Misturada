@@ -34,7 +34,8 @@ if (!$quizAleatorio || !isset($quizAleatorio['perguntas']) || empty($quizAleator
 <body class="bg-gray-100 min-h-screen flex flex-col items-center py-10">
   <div class="w-full max-w-3xl bg-white shadow rounded p-6">
     <h1 class="text-2xl font-bold mb-2 text-gray-800">Quiz: <?= htmlspecialchars($quizAleatorio['tema']) ?></h1>
-    <p class="text-gray-700 mb-6 whitespace-pre-line"><?= htmlspecialchars($quizAleatorio['art']) ?></p>
+    <p class="text-gray-700 mb-6 whitespace-pre-line"><?= htmlspecialchars($quizAleatorio['descricao'] ?? '') ?></p>
+
 
     <form method="POST" action="salvar_respostas.php" class="space-y-6">
       <input type="hidden" name="quiz_id" value="<?= $quizAleatorio['id'] ?>">
@@ -45,7 +46,7 @@ if (!$quizAleatorio || !isset($quizAleatorio['perguntas']) || empty($quizAleator
           <p class="font-semibold text-gray-800"><?= htmlspecialchars($p['texto']) ?></p>
           <?php foreach ($p['alternativas'] as $alt): ?>
             <label class="flex items-center space-x-2">
-              <input type="radio" name="respostas[<?= $p['id'] ?>]" value="<?= htmlspecialchars($alt['texto']) ?>" required class="text-blue-600">
+              <input type="radio" name="respostas[<?= $p['id'] ?>]" value="<?= $alt['id'] ?>" required class="text-blue-600">
               <span><?= htmlspecialchars($alt['texto']) ?></span>
             </label>
           <?php endforeach; ?>

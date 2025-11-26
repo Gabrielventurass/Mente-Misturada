@@ -1,17 +1,20 @@
 <?php
 declare(strict_types=1);
 require_once (__DIR__ . '/../../src/class/user.class.php');
+require_once ("../../src/config/database.php");
+
 
 if (
     $_SERVER['REQUEST_METHOD'] === 'POST' &&  
     isset($_POST['acao']) &&
     $_POST['acao'] === 'salvar'
 ) {
+    $id = $_POST['id'] ?? '';
     $nome = $_POST['nome'] ?? '';
     $email = $_POST['email'] ?? '';
     $senha = $_POST['senha'] ?? '';
 
-    $usuario = new usuario($nome, $email, $senha);
+    $usuario = new usuario($id, $nome, $email, $senha);
 
     if ($usuario->inserir()) {
         header('Location: login_user.php');
@@ -60,9 +63,6 @@ if (
         <div class="mt-4 text-center">
             <p class="text-sm text-gray-600">
                 Já possui uma conta? <a href="login_user.php" class="text-blue-600 hover:underline">Clique aqui</a>
-            </p>
-            <p class="text-sm text-gray-600">
-                É administrador? <a href="../../src/admin/login_adm.php" class="text-blue-600 hover:underline">Clique aqui</a>
             </p>
         </div>
 

@@ -41,7 +41,7 @@ try {
     }
 
     $pdo->prepare("
-        INSERT INTO resposta_usuario (usuario_email, quiz_id, acertos, tempo)
+        INSERT INTO resposta_usuario (usuario_id, quiz_id, acertos, tempo)
         VALUES (:email, :quiz_id, :acertos, :tempo)
     ")->execute([
         'email' => $email,

@@ -1,0 +1,143 @@
+/* --- Dark Mode --- */
+body.dark-mode {
+  background: #181a1b !important;
+  color: #e0e0e0 !important;
+}
+.dark-mode .card {
+  background: #23272b !important;
+  color: #e0e0e0 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.7);
+}
+.dark-mode .card-title,
+.dark-mode .section-title {
+  color: #f3f3f3 !important;
+}
+.dark-mode .stats-card {
+  background: #222a32 !important;
+  color: #e0e0e0 !important;
+}
+.dark-mode .stats-blue { background: #2a3b5a !important; }
+.dark-mode .stats-green { background: #234a3b !important; }
+.dark-mode .stats-yellow { background: #4a4323 !important; }
+.dark-mode .styled-table {
+  background: #23272b !important;
+  color: #e0e0e0 !important;
+  border-color: #444 !important;
+}
+.dark-mode .styled-table th {
+  background: #23272b !important;
+  color: #f3f3f3 !important;
+}
+.dark-mode .styled-table td {
+  border-color: #444 !important;
+}
+.dark-mode .btn {
+  background: #444 !important;
+  color: #e0e0e0 !important;
+  border: 1px solid #666 !important;
+}
+.dark-mode .btn:hover {
+  background: #666 !important;
+}
+.dark-mode .info-text {
+  color: #e0e0e0 !important;
+}
+.dark-mode .dark-toggle-btn {
+  background: #23272b;
+  color: #f3f3f3;
+  border: 1px solid #444;
+  padding: 8px 12px;
+  border-radius: 50%;
+  font-size: 1.2em;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.dark-mode .dark-toggle-btn:hover {
+  background: #444;
+}
+:root{
+  --bg-1:#0f1724;
+  --bg-2:#1b2540;
+  --accent:#2d9cdb;
+  --muted:#a8b3c7;
+  --surface: rgba(255,255,255,0.02);
+  --success:#16a34a;
+  --danger:#e74c3c;
+  --warning:#f59e0b;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Segoe UI', Roboto, Arial, sans-serif;
+  color:#e6eef8;
+  background:linear-gradient(180deg,var(--bg-1),var(--bg-2));
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  min-height:100vh;
+  padding:36px 18px;
+  display:flex;
+  justify-content:center;
+}
+main{width:100%;max-width:1100px}
+.card{background:linear-gradient(180deg,var(--surface),rgba(255,255,255,0.01));border:1px solid rgba(255,255,255,0.04);padding:22px;border-radius:12px;margin:12px 0;box-shadow:0 6px 24px rgba(2,6,23,0.6)}
+.title{font-size:20px;margin:0 0 12px 0;color:#fff}
+.muted{color:var(--muted);font-size:14px}
+.msg{margin:12px 0;padding:10px;border-radius:8px;background:rgba(45,156,219,0.06);color:var(--accent)}
+
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 14px;border-radius:10px;text-decoration:none;font-weight:700;border:1px solid rgba(255,255,255,0.04);cursor:pointer}
+.btn-primary{background:linear-gradient(90deg,var(--accent),#6ec1ff);color:#062034}
+.btn-ghost{background:transparent;color:inherit}
+.btn-secondary{background:transparent;border:1px solid rgba(255,255,255,0.06);color:inherit}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(2,6,23,0.45)}
+
+/* Danger button */
+.btn-danger{background:linear-gradient(90deg,var(--danger),#ef4444);color:#fff}
+
+/* Cards grid for quizzes/listings */
+.cards-grid{display:grid;grid-template-columns:repeat(1,1fr);gap:18px}
+@media(min-width:720px){.cards-grid{grid-template-columns:repeat(2,1fr)}}
+@media(min-width:1100px){.cards-grid{grid-template-columns:repeat(3,1fr)}}
+
+/* Actions grid */
+.actions{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+
+/* Table styles */
+.table-container{overflow:auto;border-radius:10px}
+table{width:100%;border-collapse:collapse;min-width:720px}
+th,td{padding:12px 14px;text-align:left;border-bottom:1px solid rgba(255,255,255,0.04)}
+th{font-size:13px;color:var(--muted);text-transform:uppercase;letter-spacing:0.6px}
+tr:hover td{background:rgba(255,255,255,0.01)}
+.empty{color:var(--muted);padding:12px}
+
+/* Forms */
+.form-wrap{display:flex;justify-content:center;padding:12px}
+form{width:100%;max-width:640px;display:flex;flex-direction:column;gap:12px}
+label{font-size:14px;color:var(--muted)}
+input[type="text"], input[type="password"], textarea{padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:inherit}
+.row{display:flex;gap:10px}
+
+/* Make inputs and textareas more roomy and ensure they expand inside flex rows */
+input[type="text"], textarea{
+  width:100%;
+  font-size:15px;
+}
+.alternativas input[type="text"], .pergunta input[type="text"]{
+  flex:1 1 auto;
+  min-width:0;
+}
+
+@media(max-width:720px){
+  body{padding:18px}
+  table{min-width:600px}
+}
+
+@media(max-width:520px){
+  .actions{grid-template-columns:1fr}
+}
+
+/* utility */
+.center{display:flex;align-items:center;justify-content:center}
+
+/* correct answer */
+.correct{color:var(--success);font-weight:600}

@@ -1,9 +1,11 @@
 <?php
-require_once "../../src/class/quiz.class.php";
 session_start();
+require_once "../../src/class/user.class.php";
 
 if (!isset($_SESSION['email'])) {
-    die('<div class="min-h-screen flex items-center justify-center bg-gray-100"><p class="text-red-600 font-semibold">Você precisa estar logado para enviar respostas.</p></div>');
+    die('<div class="min-h-screen flex items-center justify-center bg-gray-100">
+        <p class="text-red-600 font-semibold">Você precisa estar logado para enviar respostas.</p>
+    </div>');
 }
 
 $email = $_SESSION['email'];
@@ -12,16 +14,29 @@ $respostas = $_POST['respostas'] ?? [];
 $tempo = $_POST['tempo'] ?? 0;
 
 if (!$quiz_id || empty($respostas)) {
-    die('<div class="min-h-screen flex items-center justify-center bg-gray-100"><p class="text-red-600 font-semibold">Respostas incompletas.</p></div>');
+    die('<div class="min-h-screen flex items-center justify-center bg-gray-100">
+        <p class="text-red-600 font-semibold">Respostas incompletas.</p>
+    </div>');
 }
 
 try {
     $pdo = new PDO("mysql:host=localhost;dbname=mente", "root", "");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Obter gabarito correto
+    // Obter ID do usuário
+    $stmtUser = $pdo->prepare("SELECT id FROM usuario WHERE email = :email LIMIT 1");
+    $stmtUser->execute(['email' => $email]);
+    $usuario_id = $stmtUser->fetchColumn();
+
+    if (!$usuario_id) {
+        die('<div class="min-h-screen flex items-center justify-center bg-gray-100">
+            <p class="text-red-600 font-semibold">Usuário não encontrado!</p>
+        </div>');
+    }
+
+    // Obter gabarito correto (IDs das alternativas)
     $stmt = $pdo->prepare("
-        SELECT p.id AS pergunta_id, a.texto AS resposta_correta
+        SELECT p.id AS pergunta_id, a.id AS alternativa_id
         FROM pergunta p
         JOIN alternativa a ON p.id = a.pergunta_id
         WHERE p.quiz_id = :quiz_id AND a.correta = 1
@@ -29,33 +44,42 @@ try {
     $stmt->execute(['quiz_id' => $quiz_id]);
     $gabarito = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Mapear gabarito
     $gabaritoMap = [];
     foreach ($gabarito as $item) {
-        $gabaritoMap[$item['pergunta_id']] = $item['resposta_correta'];
+        $gabaritoMap[$item['pergunta_id']] = $item['alternativa_id'];
     }
 
     // Verificar acertos
     $acertos = 0;
-    foreach ($respostas as $pergunta_id => $resposta_usuario) {
-        if (isset($gabaritoMap[$pergunta_id]) && $gabaritoMap[$pergunta_id] === $resposta_usuario) {
+    foreach ($respostas as $pergunta_id => $resposta_usuario_id) {
+        if (isset($gabaritoMap[$pergunta_id]) && $gabaritoMap[$pergunta_id] == $resposta_usuario_id) {
             $acertos++;
         }
     }
 
-    // Salvar resultado
-    $stmt = $pdo->prepare("
-        INSERT INTO resposta_usuario (usuario_email, quiz_id, acertos, tempo)
-        VALUES (:email, :quiz_id, :acertos, :tempo)
+    // Salvar resultado no banco
+    $stmtInsert = $pdo->prepare("
+        INSERT INTO resposta_usuario (usuario_id, quiz_id, acertos, tempo)
+        VALUES (:usuario_id, :quiz_id, :acertos, :tempo)
     ");
-    $stmt->execute([
-        'email' => $email,
+    $stmtInsert->execute([
+        'usuario_id' => $usuario_id,
         'quiz_id' => $quiz_id,
         'acertos' => $acertos,
         'tempo' => intval($tempo)
     ]);
+
+    // Atualizar pontuação do usuário (ex: +1 ponto por acerto)
+    $stmtPont = $pdo->prepare("UPDATE usuario SET pontuacao = pontuacao + :pontos WHERE id = :usuario_id");
+    $stmtPont->execute([
+        'pontos' => $acertos,
+        'usuario_id' => $usuario_id
+    ]);
+
 } catch (PDOException $e) {
-    die('<div class="min-h-screen flex items-center justify-center bg-gray-100"><p class="text-red-600 font-semibold">Erro: ' . htmlspecialchars($e->getMessage()) . '</p></div>');
+    die('<div class="min-h-screen flex items-center justify-center bg-gray-100">
+        <p class="text-red-600 font-semibold">Erro: ' . htmlspecialchars($e->getMessage()) . '</p>
+    </div>');
 }
 ?>
 

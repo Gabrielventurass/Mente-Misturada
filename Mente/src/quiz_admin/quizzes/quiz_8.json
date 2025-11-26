@@ -1,0 +1,29 @@
+{
+    "id": "8",
+    "titulo": "Sistema de frenagem em carros",
+    "descricao": "O freio do carro funciona convertendo a energia cinética do veículo em calor através do atrito, quando o motorista pisa no pedal. A pressão do pedal é amplificada por um cilindro mestre, que pressuriza o fluido de freio e o envia por tubulações para as rodas. Nas rodas, o fluido pressiona as pastilhas (em freios a disco) ou lonas (em freios a tambor) contra os discos ou tambores, gerando o atrito necessário para diminuir a velocidade e parar o carro.",
+    "tema": "Mecânica 1",
+    "perguntas": [
+        {
+            "texto": "Como funciona a frenagem nos carros?",
+            "alternativas": [
+                {
+                    "texto": "O freio converte energia cinética em térmica, por isso o carro freia.",
+                    "correta": false
+                },
+                {
+                    "texto": "O freio do carro funciona convertendo a energia cinética do veículo em calor através do atrito, quando o motorista pisa no pedal.",
+                    "correta": true
+                },
+                {
+                    "texto": "Os reduzem a velocidade do carro fazendo com que ele pare, graças ao efeito joule",
+                    "correta": false
+                },
+                {
+                    "texto": "Ao pisar no pedal de freio, o carro entende que deve parar e para.",
+                    "correta": false
+                }
+            ]
+        }
+    ]
+}

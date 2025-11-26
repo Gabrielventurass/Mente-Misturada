@@ -1,65 +1,119 @@
 <?php
-
-declare(strict_types=1);
-
-require_once '../class/adm.class.php';
+require_once "../config/database.php";
 session_start();
 
-admin::garantirAdminPadraoNoBanco();
+$msg = "";
 
-$erroLogin = '';
-$admin = null;
+// Se já estiver logado
+if (isset($_SESSION['adm_nome'])) {
+  header("Location: painel_adm.php");
+  exit;
+}
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'] ?? '';
-    $senha = $_POST['senha'] ?? '';
+  $email = trim($_POST['email'] ?? '');
+  $senha = trim($_POST['senha'] ?? '');
 
-    $admin = admin::buscarPorEmail($email);
+  if (empty($email) || empty($senha)) {
+    $msg = "⚠️ Preencha todos os campos!";
+  } else {
+    $con = conectarPDO();
 
-    if ($admin && $admin->verificarSenha($senha)) {
-        $_SESSION['nome_admin'] = $admin->getNome();
-        $_SESSION['email_admin'] = $admin->getEmail();
+    // Verifica se está na lista de admins aprovados
+    $sql = $con->prepare("SELECT * FROM admin WHERE email = ?");
+    $sql->execute([$email]);
+    $admin = $sql->fetch(PDO::FETCH_ASSOC);
 
-        header('Location: inicio_adm.php');
+    if ($admin) {
+      // Confere senha
+      if (password_verify($senha, $admin['senha'])) {
+        // Login OK
+        $_SESSION['adm_id'] = $admin['codigo'];
+        $_SESSION['adm_nome'] = $admin['nome'];
+        $_SESSION['adm_email'] = $admin['email'];
+        header("Location: painel_adm.php");
         exit;
+      } else {
+        $msg = "❌ Senha incorreta!";
+      }
     } else {
-        $erroLogin = 'Email ou senha inválidos!';
+      // Pode estar pendente
+      $checkPend = $con->prepare("SELECT * FROM admins_pendentes WHERE email = ?");
+      $checkPend->execute([$email]);
+      if ($checkPend->fetch()) {
+        $msg = "⏳ Seu cadastro ainda está aguardando aprovação do superadmin!";
+      } else {
+        $msg = "❌ Nenhum administrador encontrado com esse e-mail!";
+      }
     }
+
+    $con = null;
+  }
 }
 ?>
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <title>Login</title>
-    <link rel="stylesheet" href="../css/style_adm.css">
-    <link rel="shortcut icon" href="../img/cerebro.png" type="image/x-icon">
+<meta charset="UTF-8">
+<title>Login de Administrador</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background-color: #121212;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+form {
+  background-color: #1e1e1e;
+  padding: 25px;
+  border-radius: 10px;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+input {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background: #2a2a2a;
+  color: white;
+}
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #2d3a4a;
+  color: #fff;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #3f556f;
+}
+.msg {
+  margin-top: 10px;
+  text-align: center;
+  color: #00ff88;
+}
+h3 {
+  text-align: center;
+  margin-bottom: 10px;
+}
+</style>
 </head>
 <body>
-    <center>
-        <h1>Boas-vindas! Entre com sua conta de ADM</h1>
-    </center>
-    <div class="container">
-        <fieldset class="popUp">
-            <legend>Efetuar login</legend>
-            <form method="POST" action="login_adm.php">
-                <label class="labels">Email:</label><br>
-                <input type="email" name="email" class="inputs" required><br>
-
-                <label class="labels">Senha:</label><br>
-                <input type="password" name="senha" class="inputs" required><br>
-
-                <button type="submit" class="btDf" style="margin-left: 35%;">Entrar</button>
-            </form>
-
-            <?php if (!empty($erroLogin)) : ?>
-                <div class="erro"><?= htmlspecialchars($erroLogin) ?></div>
-            <?php endif; ?>
-
-            <p>Deseja criar uma conta? <a href="cadastro_adm.php">Criar nova conta</a></p>
-            <p>É usuário? <a href="../users/login.php">Fazer login</a></p>
-        </fieldset>
-    </div>
+  <form method="POST">
+    <h3>Login de Admin</h3>
+    <input type="email" name="email" placeholder="E-mail" required>
+    <input type="password" name="senha" placeholder="Senha" required>
+    <button type="submit">Entrar</button>
+    <button type="button"><a href="recuperar_senha.php">Esqueci minha senha</a></button>
+    <button type="button"><a href="cadastro_adm.php">Não possuo conta</a></button>
+    <div class="msg"><?= htmlspecialchars($msg) ?></div>
+  </form>
 </body>
 </html>

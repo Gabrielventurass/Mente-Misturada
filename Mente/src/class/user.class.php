@@ -1,12 +1,12 @@
 <?php
-require_once "database.php";
-
 class usuario {
+    private $id;
     private $nome;
     private $email;
     private $senha;
 
-    public function __construct($nome, $email, $senha) {
+    public function __construct($id, $nome, $email, $senha) {
+        $this->id = $id;
         $this->nome = $nome;
         $this->email = $email;
         $this->senha = $senha;
@@ -20,6 +20,15 @@ class usuario {
     }
     public function getSenha(): string {
         return $this->senha;
+    }
+        public function getId(): string {
+        return $this->id;
+    }
+
+    public function setId($id) {
+        if (empty($id))
+            throw new Exception("Nome não pode ser vazio");
+        $this->id = $id;
     }
 
     public function setNome($nome) {
@@ -40,6 +49,15 @@ class usuario {
         $this->senha = $senha;
     }
 
+function conectarPDO() {
+    try {
+        $pdo = new PDO("mysql:host=localhost;dbname=mente", "root", "");
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        return $pdo;
+    } catch (PDOException $e) {
+        die("Erro ao conectar ao banco: " . $e->getMessage());
+    }
+}
 
     private $erro = '';
     public function getErro(): string {
@@ -63,12 +81,13 @@ class usuario {
             return false;
         }
 
-        $sql = "INSERT INTO usuario (nome, email, senha) VALUES (:nome, :email, :senha)";
+        $sql = "INSERT INTO usuario (id, nome, email, senha) VALUES (:id, :nome, :email, :senha)";
         $comando = $conexao->prepare($sql);
 
         $senhaHash = password_hash($this->senha, PASSWORD_DEFAULT);
         echo "Senha hash gerada.<br>";
 
+        $comando->bindValue(':id', $this->getId());
         $comando->bindValue(':nome', $this->getNome());
         $comando->bindValue(':email', $this->getEmail());
         $comando->bindValue(':senha', $senhaHash);
@@ -85,7 +104,7 @@ class usuario {
     public static function buscarPorEmail($email) {
         $conexao = conectarPDO();
     
-        $sql = "SELECT nome, email, senha FROM usuario WHERE email = :email LIMIT 1";
+        $sql = "SELECT id, nome, email, senha FROM usuario WHERE email = :email LIMIT 1";
         $comando = $conexao->prepare($sql);
         $comando->bindValue(':email', $email);
         $comando->execute();
@@ -94,6 +113,7 @@ class usuario {
     
         if ($resultado) {
             $usuario = new usuario(
+                $resultado['id'],
                 $resultado['nome'],
                 $resultado['email'],
                 $resultado['senha'] 
@@ -147,7 +167,7 @@ public static function excluirPorEmail($email) {
     try {
         $conexao = conectarPDO();
 
-        $sqlRespostas = "DELETE FROM resposta_usuario WHERE usuario_email = :email";
+        $sqlRespostas = "DELETE FROM resposta_usuario WHERE usuario_id = :email";
         $comandoRespostas = $conexao->prepare($sqlRespostas);
         $comandoRespostas->bindValue(':email', $email);
         $comandoRespostas->execute();

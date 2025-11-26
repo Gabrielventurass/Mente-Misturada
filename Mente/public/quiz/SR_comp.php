@@ -52,7 +52,7 @@ try {
         ->execute(['pontuacao' => $pontuacao_total, 'email' => $email]);
 
     $pdo->prepare("
-        INSERT INTO resposta_usuario (usuario_email, quiz_id, acertos, tempo, pontuacao)
+        INSERT INTO resposta_usuario (usuario_id, quiz_id, acertos, tempo, pontuacao)
         VALUES (:email, :quiz_id, :acertos, :tempo, :pontuacao)
     ")->execute([
         'email' => $email,

@@ -1,13 +1,27 @@
 <?php
 session_start();
 
-// Verificar se o usuário está logado
 if (!isset($_SESSION['email'])) {
     echo "Você precisa estar logado para enviar as respostas.";
     exit;
 }
 
-$email = $_SESSION['email'];  // Obtemos o email do usuário logado
+$email = $_SESSION['email'];
+
+// Pega o id do usuário a partir do email
+$pdo = new PDO("mysql:host=localhost;dbname=mente", "root", "");
+$pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+$stmt = $pdo->prepare("SELECT id FROM usuario WHERE email = :email");
+$stmt->execute(['email' => $email]);
+$usuario = $stmt->fetch(PDO::FETCH_ASSOC);
+
+if (!$usuario) {
+    echo "Usuário não encontrado.";
+    exit;
+}
+
+$id = $usuario['id']; // id do usuário logado
 
 $quiz_id = $_POST['quiz_id'] ?? null;
 $respostas = $_POST['respostas'] ?? [];
@@ -17,27 +31,19 @@ if (!$quiz_id || empty($respostas)) {
     exit;
 }
 
-try {
-    // Conexão com o banco de dados
-    $pdo = new PDO("mysql:host=localhost;dbname=mente", "root", "");
-    $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-
-    // Salvar as respostas do usuário
-    foreach ($respostas as $pergunta_id => $alternativa_id) {
-        // Inserir a resposta na tabela resposta_comunidade
-        $stmt = $pdo->prepare("
-            INSERT INTO resposta_comunidade (usuario_email, quiz_id, pergunta_id, alternativa_id)
-            VALUES (:usuario_email, :quiz_id, :pergunta_id, :alternativa_id)
-        ");
-        $stmt->execute([
-            'usuario_email' => $email,
-            'quiz_id' => $quiz_id,
-            'pergunta_id' => $pergunta_id,
-            'alternativa_id' => $alternativa_id
-        ]);
-    }
-
-    echo "Respostas enviadas com sucesso!";
-} catch (PDOException $e) {
-    echo "Erro: " . $e->getMessage();
+// Agora salva normalmente as respostas
+foreach ($respostas as $pergunta_id => $alternativa_id) {
+    $stmt = $pdo->prepare("
+        INSERT INTO resposta_comunidade (usuario_id, quiz_id, pergunta_id, alternativa_id)
+        VALUES (:usuario_id, :quiz_id, :pergunta_id, :alternativa_id)
+    ");
+    $stmt->execute([
+        'usuario_id' => $id,
+        'quiz_id' => $quiz_id,
+        'pergunta_id' => $pergunta_id,
+        'alternativa_id' => $alternativa_id
+    ]);
 }
+
+echo "Respostas enviadas com sucesso!";
+?>

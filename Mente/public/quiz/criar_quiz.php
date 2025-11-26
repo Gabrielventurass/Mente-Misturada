@@ -9,23 +9,41 @@ if (!isset($_SESSION['email'])) {
 $email = $_SESSION['email'];
 
 try {
+    // 1. Criar a conexão PDO
     $pdo = new PDO("mysql:host=localhost;dbname=mente", "root", "");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+
+    // 2. Buscar id do usuário
+    $stmtUser = $pdo->prepare("SELECT id FROM usuario WHERE email = :email");
+    $stmtUser->execute(['email' => $email]);
+    $usuario = $stmtUser->fetch(PDO::FETCH_ASSOC);
+
+    if (!$usuario) {
+        echo "Usuário não encontrado no banco!";
+        exit;
+    }
+
+    $usuario_id = $usuario['id'];
 
     $quiz_id = $_GET['quiz_id'] ?? null;
     $quiz_data = null;
     $perguntas_organizacao = [];
 
     if ($quiz_id) {
-        $stmt = $pdo->prepare("SELECT * FROM quizzes_user WHERE id = :quiz_id AND usuario_email = :email");
-        $stmt->execute(['quiz_id' => $quiz_id, 'email' => $email]);
+        $stmt = $pdo->prepare("SELECT * FROM quizzes_user WHERE id = :quiz_id AND usuario_id = :usuario_id");
+        $stmt->execute(['quiz_id' => $quiz_id, 'usuario_id' => $usuario_id]);
         $quiz_data = $stmt->fetch(PDO::FETCH_ASSOC);
         if (!$quiz_data) {
             echo "Quiz não encontrado ou você não tem permissão para editar este quiz.";
             exit;
         }
 
-        $stmt_perguntas = $pdo->prepare("SELECT p.id AS pergunta_id, p.texto AS pergunta_texto, a.id AS alternativa_id, a.texto AS alternativa_texto, a.correta FROM perguntas_user p LEFT JOIN alternativas a ON p.id = a.pergunta_id WHERE p.quiz_id = :quiz_id");
+        $stmt_perguntas = $pdo->prepare(
+            "SELECT p.id AS pergunta_id, p.texto AS pergunta_texto, a.id AS alternativa_id, a.texto AS alternativa_texto, a.correta 
+            FROM perguntas_user p 
+            LEFT JOIN alternativas a ON p.id = a.pergunta_id 
+            WHERE p.quiz_id = :quiz_id"
+        );
         $stmt_perguntas->execute(['quiz_id' => $quiz_id]);
         $perguntas_data = $stmt_perguntas->fetchAll(PDO::FETCH_ASSOC);
 
@@ -38,11 +56,13 @@ try {
             ];
         }
     }
+
 } catch (PDOException $e) {
     echo "Erro: " . $e->getMessage();
     exit;
 }
 
+// 3. Processar POST para criar ou atualizar
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $quiz_titulo = $_POST['titulo'] ?? null;
     $quiz_descricao = $_POST['descricao'] ?? null;
@@ -57,20 +77,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     try {
         if ($quiz_id) {
             $stmt = $pdo->prepare("UPDATE quizzes_user SET titulo = :titulo, descricao = :descricao, tema = :tema WHERE id = :quiz_id");
-            $stmt->execute(['titulo' => $quiz_titulo,'descricao' => $quiz_descricao,'tema' => $quiz_tema,'quiz_id' => $quiz_id]);
+            $stmt->execute([
+                'titulo' => $quiz_titulo,
+                'descricao' => $quiz_descricao,
+                'tema' => $quiz_tema,
+                'quiz_id' => $quiz_id
+            ]);
             $mensagem = "Quiz atualizado com sucesso!";
         } else {
-            $stmt = $pdo->prepare("INSERT INTO quizzes_user (titulo, descricao, tema, usuario_email) VALUES (:titulo, :descricao, :tema, :usuario_email)");
-            $stmt->execute(['titulo' => $quiz_titulo,'descricao' => $quiz_descricao,'tema' => $quiz_tema,'usuario_email' => $email]);
+            $stmt = $pdo->prepare("INSERT INTO quizzes_user (titulo, descricao, tema, usuario_id) VALUES (:titulo, :descricao, :tema, :usuario_id)");
+            $stmt->execute([
+                'titulo' => $quiz_titulo,
+                'descricao' => $quiz_descricao,
+                'tema' => $quiz_tema,
+                'usuario_id' => $usuario_id
+            ]);
             $quiz_id = $pdo->lastInsertId();
             $mensagem = "Quiz criado com sucesso!";
         }
 
         if ($quiz_id) {
+            // Deleta perguntas e alternativas antigas
             $pdo->prepare("DELETE FROM alternativas WHERE pergunta_id IN (SELECT id FROM perguntas_user WHERE quiz_id = :quiz_id)")->execute(['quiz_id' => $quiz_id]);
             $pdo->prepare("DELETE FROM perguntas_user WHERE quiz_id = :quiz_id")->execute(['quiz_id' => $quiz_id]);
         }
 
+        // Insere novas perguntas e alternativas
         foreach ($perguntas as $pergunta) {
             $stmt = $pdo->prepare("INSERT INTO perguntas_user (quiz_id, texto) VALUES (:quiz_id, :texto)");
             $stmt->execute(['quiz_id' => $quiz_id, 'texto' => $pergunta['texto']]);
@@ -78,14 +110,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             foreach ($pergunta['alternativas'] as $alt) {
                 $correta = isset($alt['correta']) ? 1 : 0;
                 $stmt = $pdo->prepare("INSERT INTO alternativas (pergunta_id, texto, correta) VALUES (:pergunta_id, :texto, :correta)");
-                $stmt->execute(['pergunta_id' => $pergunta_id,'texto' => $alt['texto'],'correta' => $correta]);
+                $stmt->execute([
+                    'pergunta_id' => $pergunta_id,
+                    'texto' => $alt['texto'],
+                    'correta' => $correta
+                ]);
             }
         }
+
     } catch (PDOException $e) {
         echo "Erro: " . $e->getMessage();
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>

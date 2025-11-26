@@ -13,12 +13,23 @@ try {
     $pdo = new PDO("mysql:host=localhost;dbname=mente", "root", "");
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-    // Consultar quizzes do usuário
-    $stmt = $pdo->prepare("SELECT * FROM quizzes_user WHERE usuario_email = :email");
-    $stmt->execute(['email' => $_SESSION['email']]);
+    // Busca id do usuário pelo email
+    $stmtUser = $pdo->prepare("SELECT id FROM usuario WHERE email = :email");
+    $stmtUser->execute(['email' => $_SESSION['email']]);
+    $usuario = $stmtUser->fetch(PDO::FETCH_ASSOC);
+
+    if (!$usuario) {
+        echo "Usuário não encontrado!";
+        exit;
+    }
+
+    $usuario_id = $usuario['id'];
+
+    // Consultar quizzes do usuário usando o id
+    $stmt = $pdo->prepare("SELECT * FROM quizzes_user WHERE usuario_id = :usuario_id");
+    $stmt->execute(['usuario_id' => $usuario_id]);
     $quizzes = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
-    // Se não vier nada, garante array vazio
     if (!$quizzes) {
         $quizzes = [];
     }
@@ -26,6 +37,7 @@ try {
 } catch (PDOException $e) {
     die("Erro ao conectar ao banco de dados: " . $e->getMessage());
 }
+
 ?>
 
 <!DOCTYPE html>

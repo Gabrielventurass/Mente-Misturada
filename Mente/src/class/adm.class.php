@@ -1,5 +1,5 @@
 <?php
-require_once "database.php";
+require_once "../config/database.php";
 
 class admin {
     private $codigo;
@@ -7,22 +7,14 @@ class admin {
     private $email;
     private $senha;
     private $erro = '';
+    private PDO $pdo;
 
-    public function __construct($codigo, $nome, $email, $senha) {
+    public function __construct($codigo, $nome, $email, $senha, PDO $pdo) {
         $this->codigo = $codigo;
         $this->nome = $nome;
         $this->email = $email;
         $this->senha = $senha;
-        admin::garantirAdminPadraoNoBanco();
-    }
-
-    public static function adminPadrao() {
-        return new admin(
-            "0",
-            "Administrador Principal",
-            "admin1@gmail.com",
-            "d3lta034"
-        );
+        $this->pdo = $pdo;
     }
 
     public function getCodigo(): string { return $this->codigo; }
@@ -93,35 +85,51 @@ class admin {
         }
     }
 
-    public static function buscarPorEmail($email) {
-        $adminFixo = self::adminPadrao();
-        if ($email === $adminFixo->getEmail()) {
-            return $adminFixo;
+    public static function buscarPorEmail(string $email): ?admin {
+    try {
+        $conexao = conectarPDO();
+        $sql = "SELECT codigo, nome, email, senha FROM admin WHERE email = :email LIMIT 1";
+        $comando = $conexao->prepare($sql);
+        $comando->bindValue(':email', $email);
+        $comando->execute();
+
+        $resultado = $comando->fetch(PDO::FETCH_ASSOC);
+        if ($resultado) {
+            // Note: passamos o PDO ao construtor para manter compatibilidade com a sua classe
+            return new admin(
+                $resultado['codigo'],
+                $resultado['nome'],
+                $resultado['email'],
+                $resultado['senha'],
+                $conexao
+            );
         }
-
-        try {
-            $conexao = conectarPDO();
-            $sql = "SELECT codigo, nome, email, senha FROM admin WHERE email = :email LIMIT 1";
-            $comando = $conexao->prepare($sql);
-            $comando->bindValue(':email', $email);
-            $comando->execute();
-
-            $resultado = $comando->fetch(PDO::FETCH_ASSOC);
-            $conexao = null;
-
-            if ($resultado) {
-                return new admin(
-                    $resultado['codigo'],
-                    $resultado['nome'],
-                    $resultado['email'],
-                    $resultado['senha']
-                );
-            }
-        } catch (PDOException $e) {
-            error_log("Erro: " . $e->getMessage());
-        }
-        return null;
+    } catch (PDOException $e) {
+        error_log("buscarPorEmail erro: " . $e->getMessage());
     }
+
+    return null;
+}
+
+    // Retorna o admin padrão (instância válida). Nunca retorna null.
+public static function adminPadrao(): admin {
+    $emailPadrao = "admin@gmail"; // ajuste se for outro
+    $admin = self::buscarPorEmail($emailPadrao);
+
+    if ($admin instanceof admin) {
+        return $admin;
+    }
+
+    // Se não existir no banco, devolve um objeto "placeholder" seguro
+    // (passamos um PDO novo só para satisfazer o construtor)
+    return new admin(
+        0,
+        "Administrador Padrão",
+        $emailPadrao,
+        "",            // senha vazia (não usada aqui)
+        conectarPDO()
+    );
+}
 
     public function atualizarNome(): bool {
         try {
@@ -173,40 +181,51 @@ class admin {
         return $result;
     }
 
-    public static function garantirAdminPadraoNoBanco(): bool {
-        try {
-            $conexao = conectarPDO();
-            $adminFixo = self::adminPadrao();
-
-            $sql = "SELECT email FROM admin WHERE email = :email";
-            $comando = $conexao->prepare($sql);
-            $comando->bindValue(':email', $adminFixo->getEmail());
-            $comando->execute();
-
-            if ($comando->rowCount() === 0) {
-                $sqlInserir = "INSERT INTO admin (nome, email, senha) VALUES (:nome, :email, :senha)";
-                $comandoInserir = $conexao->prepare($sqlInserir);
-                $comandoInserir->bindValue(':nome', $adminFixo->getNome());
-                $comandoInserir->bindValue(':email', $adminFixo->getEmail());
-                $comandoInserir->bindValue(':senha', password_hash($adminFixo->getSenha(), PASSWORD_DEFAULT));
-                $comandoInserir->execute();
-            }
-            $conexao = null;
-            return true;
-        } catch (PDOException $e) {
-            error_log("Erro ao garantir admin fixo: " . $e->getMessage());
-            return false;
-        }
-    }
-
-    public static function listarPendentes(): array {
+    // Lista pendentes — versão corrigida (evita usar ->close() em PDO)
+public static function listarPendentes(): array {
+    try {
         $conexao = conectarPDO();
         $sql = "SELECT codigo, nome, email FROM admins_pendentes ORDER BY nome";
         $comando = $conexao->prepare($sql);
         $comando->execute();
         $result = $comando->fetchAll(PDO::FETCH_ASSOC);
-        $conexao->close();
+        $conexao = null; // fecha a conexão PDO
         return $result;
+    } catch (PDOException $e) {
+        error_log("listarPendentes erro: " . $e->getMessage());
+        return [];
     }
+}
+    
+    // 🔹 Gera e salva token de recuperação
+public static function gerarTokenRecuperacao(PDO $pdo, string $email): string|false {
+    $token = bin2hex(random_bytes(32));
+    $expira = date("Y-m-d H:i:s", strtotime("+1 hour"));
+
+    $sql = "UPDATE admin SET token_recuperacao = :token, token_expira = :expira WHERE email = :email";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([
+        ':token' => $token,
+        ':expira' => $expira,
+        ':email' => $email
+    ]);
+
+    return $stmt->rowCount() > 0 ? $token : false;
+}
+
+public static function validarToken(PDO $pdo, string $token): array|false {
+    $sql = "SELECT * FROM admin WHERE token_recuperacao = :token AND token_expira > NOW()";
+    $stmt = $pdo->prepare($sql);
+    $stmt->execute([':token' => $token]);
+    return $stmt->fetch(PDO::FETCH_ASSOC) ?: false;
+}
+
+public static function atualizarSenha(PDO $pdo, int $id, string $novaSenha): bool {
+    $hash = password_hash($novaSenha, PASSWORD_DEFAULT);
+    $sql = "UPDATE admin SET senha = :senha, token_recuperacao = NULL, token_expira = NULL WHERE codigo = :id";
+    $stmt = $pdo->prepare($sql);
+    return $stmt->execute([':senha' => $hash, ':id' => $id]);
+}
+
 }
 ?>

@@ -1,50 +1,89 @@
 <?php
+require_once "../config/database.php";
+require_once "../class/adm.class.php";
 
-declare(strict_types=1);
+$mensagem = "";
+$pdo = conectarPDO(); // 🔹 conexão PDO
 
-include 'adm.php';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $nome = trim($_POST['nome'] ?? '');
+    $email = trim($_POST['email'] ?? '');
+    $senha = trim($_POST['senha'] ?? '');
+
+    if (empty($nome) || empty($email) || empty($senha)) {
+        $mensagem = "❌ Preencha todos os campos!";
+    } else {
+        try {
+            // 🔹 passa o PDO pro construtor
+            $novoAdmin = new admin(0, $nome, $email, $senha, $pdo);
+
+            if ($novoAdmin->inserir()) {
+                $mensagem = "✅ Cadastro enviado! Aguarde aprovação do superadmin.";
+            } else {
+                $mensagem = "❌ Erro: " . $novoAdmin->getErro();
+            }
+        } catch (Exception $e) {
+            $mensagem = "❌ Erro: " . $e->getMessage();
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Cadastro de Administrador</title>
-    <link rel="shortcut icon" href="../img/cerebro.png" type="image/x-icon">
-    <link rel="stylesheet" href="../css/style_adm.css">
+<meta charset="UTF-8">
+<title>Cadastro de Administrador</title>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  background-color: #121212;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+}
+form {
+  background-color: #1e1e1e;
+  padding: 20px;
+  border-radius: 10px;
+  width: 300px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+input {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+}
+button {
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  background-color: #2d3a4a;
+  color: #fff;
+  cursor: pointer;
+}
+button:hover {
+  background-color: #3f556f;
+}
+.msg {
+  margin-top: 10px;
+  text-align: center;
+}
+</style>
 </head>
 <body>
-    <center>
-        <h1>Bem-vindo ao mundo Mente Misturada, novo administrador!</h1>
-    </center>
-
-    <form action="cadastro_adm.php" method="post">
-        <fieldset class="popUp">
-            <legend>Faça seu cadastro</legend>
-
-            <label for="nome" class="labels">Nome</label><br>
-            <input type="text" name="nome" id="nome" class="inputs" required><br>
-
-            <label for="email" class="labels">E-mail</label><br>
-            <input type="email" name="email" id="email" class="inputs" required><br>
-
-            <label for="senha" class="labels">Senha</label><br>
-            <input type="password" name="senha" id="senha" class="inputs" required><br>
-
-            <input type="hidden" name="acao" value="salvar">
-
-            <input type="submit" value="Cadastrar" class="btDf" style="margin-left: 100px;">
-
-            <p>Já possui uma conta? <a href="login_adm.php">Clique aqui</a></p>
-            <p>É usuário? <a href="../users/login.php">Clique aqui</a></p>
-
-            <?php if (isset($erroCadastro)) : ?>
-                <p style="color:red; text-align:center;">
-                    <?= htmlspecialchars($erroCadastro) ?>
-                </p>
-            <?php endif; ?>
-        </fieldset>
-    </form>
+  <form method="POST" action="">
+    <h3>Cadastro de Admin</h3>
+    <input type="text" name="nome" placeholder="Nome" required>
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="senha" placeholder="Senha" required>
+    <button type="submit">Cadastrar</button>
+    <a href="login_adm.php">Logar</a>
+    <div class="msg"><?= htmlspecialchars($mensagem) ?></div>
+  </form>
 </body>
 </html>

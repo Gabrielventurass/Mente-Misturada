@@ -72,9 +72,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             <p class="text-sm text-gray-600">
                 Ainda não tem conta? <a href="cadastro_user.php" class="text-blue-600 hover:underline">Clique aqui</a>
             </p>
-            <p class="text-sm text-gray-600">
-                É administrador? <a href="../../src/admin/login_adm.php" class="text-blue-600 hover:underline">Clique aqui</a>
-            </p>
         </div>
     </form>
 </body>
